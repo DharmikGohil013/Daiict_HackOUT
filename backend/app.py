@@ -23,7 +23,7 @@ def create_app(test_config: dict = None):
     # ── Configuration ─────────────────────────────────────────
     app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY", "dev-secret-change-in-prod")
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "jwt-dev-secret")
-    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = jwt_expires_seconds()
+    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = False  # Disabled for presentation
     app.config["MAX_CONTENT_LENGTH"] = MAX_UPLOAD_BYTES  # 16 MB max upload
     app.config["JSON_SORT_KEYS"] = False
     if test_config:
@@ -51,6 +51,7 @@ def create_app(test_config: dict = None):
     from routes.auth_routes import auth_bp
     from routes.certificate_routes import certificates_bp
     from routes.claim_routes import claims_bp
+    from routes.config_routes import config_bp
     from routes.dashboard_routes import dashboard_bp
     from routes.fraud_routes import fraud_bp
     from routes.generation_routes import generation_bp
@@ -79,6 +80,8 @@ def create_app(test_config: dict = None):
     app.register_blueprint(audit_bp, url_prefix="/api")
     app.register_blueprint(dashboard_bp, url_prefix="/api")
     app.register_blueprint(settings_bp, url_prefix="/api")
+    # Shared
+    app.register_blueprint(config_bp, url_prefix="/api")
 
     # ── Health Check ──────────────────────────────────────────
     @app.route("/health")

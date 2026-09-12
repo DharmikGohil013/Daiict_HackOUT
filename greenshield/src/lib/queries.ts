@@ -2,7 +2,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   analyticsApi, auditApi, certificatesApi, claimsApi, dashboardsApi, fraudApi, generationApi, institutionsApi, investigationsApi, issuerApi,
-  plantsApi, predictionApi, settingsApi, verifierApi,
+  plantsApi, predictionApi, settingsApi, verifierApi, configApi,
 } from '@/services';
 import type { ClaimFilters, SubmitClaimInput } from '@/services/api/claims';
 import type { AnalyticsFilters } from '@/services/api/analytics';
@@ -34,6 +34,7 @@ export const keys = {
   forecast: (id: string) => ['forecast', id] as const,
   model: ['ml', 'model'] as const,
   riskSettings: ['settings', 'risk'] as const,
+  enums: ['config', 'enums'] as const,
 };
 
 export const useGovernmentDashboard = () => useQuery({ queryKey: keys.govDashboard, queryFn: dashboardsApi.government, refetchInterval: 60_000 });
@@ -57,6 +58,7 @@ export const useAnalytics = (filters: AnalyticsFilters = {}) => useQuery({ query
 export const useGeneration = (plantId: string | null | undefined, filters: { start?: string; end?: string; limit?: number } = {}) => useQuery({ queryKey: keys.generation(plantId ?? '', filters), queryFn: () => generationApi.history(plantId!, filters), enabled: !!plantId });
 export const useForecast = (plantId: string | null | undefined) => useQuery({ queryKey: keys.forecast(plantId ?? ''), queryFn: () => predictionApi.forecast(plantId!), enabled: !!plantId });
 export const useModelInfo = () => useQuery({ queryKey: keys.model, queryFn: predictionApi.modelInfo, staleTime: 5 * 60_000 });
+export const useEnums = () => useQuery({ queryKey: keys.enums, queryFn: () => configApi.enums(), staleTime: 24 * 60 * 60_000 });
 
 export function useDecideClaim() {
   const qc = useQueryClient();

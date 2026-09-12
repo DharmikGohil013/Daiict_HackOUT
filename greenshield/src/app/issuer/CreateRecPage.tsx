@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { CheckCircle2, Download, ShieldCheck, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/lib/routes';
-import { useIssueRec, usePlants } from '@/lib/queries';
+import { useIssueRec, usePlants, useEnums } from '@/lib/queries';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Panel } from '@/components/common/Panel';
 import { Field } from '@/components/common/FilterBar';
@@ -15,6 +15,7 @@ import type { ApiError } from '@/types';
 export default function CreateRecPage() {
   const plants = usePlants();
   const issue = useIssueRec();
+  const enums = useEnums();
   const toast = useToast();
   const [f, setF] = useState({ certificate_id: '', generator_id: '', energy_kwh: '', generation_date: '', generation_period: '', energy_type: 'Solar', format: 'png' as 'png' | 'pdf' });
   const onSubmit = async (e: FormEvent) => {
@@ -36,8 +37,8 @@ export default function CreateRecPage() {
             <Field id="r-kwh" label="Energy (kWh)"><input id="r-kwh" type="number" min="0.001" step="0.001" className="field" required value={f.energy_kwh} onChange={(e) => setF({ ...f, energy_kwh: e.target.value })} /></Field>
             <Field id="r-date" label="Generation date"><input id="r-date" type="date" className="field" required value={f.generation_date} onChange={(e) => setF({ ...f, generation_date: e.target.value })} /></Field>
             <Field id="r-period" label="Generation period" hint="e.g. 2026-08 or 2026-08-01..2026-08-31"><input id="r-period" className="field" value={f.generation_period} onChange={(e) => setF({ ...f, generation_period: e.target.value })} /></Field>
-            <Field id="r-type" label="Energy type"><select id="r-type" className="field" value={f.energy_type} onChange={(e) => setF({ ...f, energy_type: e.target.value })}>{['Solar', 'Wind', 'Hydro', 'Biomass', 'Geothermal', 'Tidal', 'Other'].map((t) => <option key={t}>{t}</option>)}</select></Field>
-            <Field id="r-format" label="File format"><select id="r-format" className="field" value={f.format} onChange={(e) => setF({ ...f, format: e.target.value as 'png' | 'pdf' })}><option value="png">PNG</option><option value="pdf">PDF</option></select></Field>
+            <Field id="r-type" label="Energy type"><select id="r-type" className="field" value={f.energy_type} onChange={(e) => setF({ ...f, energy_type: e.target.value })}>{(enums.data?.energy_types ?? []).map((t) => <option key={t}>{t}</option>)}</select></Field>
+            <Field id="r-format" label="File format"><select id="r-format" className="field" value={f.format} onChange={(e) => setF({ ...f, format: e.target.value as 'png' | 'pdf' })}>{(enums.data?.output_formats ?? []).map((t) => <option key={t} value={t}>{t.toUpperCase()}</option>)}</select></Field>
             <div className="flex items-end">
               <button className="btn btn-primary w-full" type="submit" disabled={issue.isPending}>
                 {issue.isPending ? <><Loader2 size={16} className="animate-spin" /><span>Signing &amp; issuing…</span></> : 'Issue REC'}

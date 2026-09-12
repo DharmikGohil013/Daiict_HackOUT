@@ -1,5 +1,5 @@
 // frontend/src/components/Issue/IssueForm.jsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
@@ -7,8 +7,7 @@ import toast from 'react-hot-toast';
 import { issueCertificate } from '../../store/issueSlice';
 import { selectUser } from '../../store/authSlice';
 import LoadingSpinner from '../Common/LoadingSpinner';
-
-const SOURCE_TYPES = ['Wind', 'Solar', 'Hydro', 'Biomass', 'Geothermal', 'Tidal', 'Other'];
+import configService from '../../services/configService';
 
 export default function IssueForm({ onSuccess }) {
   const dispatch = useDispatch();
@@ -16,6 +15,17 @@ export default function IssueForm({ onSuccess }) {
   const user = useSelector(selectUser);
   const loading = status === 'loading';
   const today = new Date().toISOString().slice(0, 10);
+  const [sourceTypes, setSourceTypes] = useState(['Wind', 'Solar', 'Hydro', 'Biomass', 'Geothermal', 'Tidal', 'Other']);
+  const [formats, setFormats] = useState(['png', 'pdf']);
+
+  useEffect(() => {
+    configService.enums().then((res) => {
+      if (res.success) {
+        setSourceTypes(res.energy_types || sourceTypes);
+        setFormats(res.output_formats || formats);
+      }
+    }).catch(console.error);
+  }, []);
 
   const { register, handleSubmit, formState: { errors }, reset } = useForm({
     defaultValues: { source_type: 'Wind', format: 'png', issuer_id: user?.email || '' },
@@ -62,7 +72,7 @@ export default function IssueForm({ onSuccess }) {
         <div>
           <label className="label" htmlFor="source_type">Source Type</label>
           <select id="source_type" className="field" {...register('source_type', { required: true })}>
-            {SOURCE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+            {sourceTypes.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
         </div>
 
@@ -90,8 +100,7 @@ export default function IssueForm({ onSuccess }) {
         <div>
           <label className="label" htmlFor="format">Output Format</label>
           <select id="format" className="field" {...register('format')}>
-            <option value="png">PNG (Recommended)</option>
-            <option value="pdf">PDF</option>
+            {formats.map((f) => <option key={f} value={f}>{f.toUpperCase()}{f === 'png' ? ' (Recommended)' : ''}</option>)}
           </select>
         </div>
 
