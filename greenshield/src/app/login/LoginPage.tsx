@@ -50,7 +50,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="grid min-h-screen place-items-center bg-bg px-4 py-10">
+    <main className="grid min-h-screen place-items-center bg-bg px-4 py-10">
       <div className="w-full max-w-md">
         <Link to={ROUTES.landing} className="mb-6 flex items-center gap-3 text-ink no-underline"><span className="grid h-10 w-10 place-items-center rounded-lg bg-primary text-primary-fg"><ShieldCheck size={22} /></span><span><span className="block font-display text-xl font-semibold leading-none">GreenShield</span><span className="mt-1 block text-xs text-ink-3">Renewable energy verification portal</span></span></Link>
         <form onSubmit={submit} className="panel panel-pad space-y-4" aria-label="Sign in">
@@ -80,6 +80,6 @@ export default function LoginPage() {
           <p className="text-center text-xs text-ink-3">Public certificate verification needs no account — <Link to={ROUTES.verifier}>open the REC verifier</Link>.</p>
         </form>
       </div>
-    </div>
+    </main>
   );
 }
