@@ -1,5 +1,7 @@
 import { useState, type FormEvent } from 'react';
-import { CheckCircle2, Download } from 'lucide-react';
+import { CheckCircle2, Download, ShieldCheck } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ROUTES } from '@/lib/routes';
 import { useIssueRec, usePlants } from '@/lib/queries';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Panel } from '@/components/common/Panel';
@@ -48,7 +50,10 @@ export default function CreateRecPage() {
               </li>
             ))}
           </ol>
-          {r && <div className="mt-4 border-t border-line pt-4"><Kv cols={2} items={[{ label: 'Hash', value: shortHash(r.hash, 16), mono: true }, { label: 'Signature', value: r.signature }, { label: 'Ledger', value: r.ledger }, { label: 'Claim status', value: r.claim_status }]} />{r.anomaly_flag && <p className="mt-3 rounded-lg bg-medium-soft px-3 py-2 text-xs text-medium">Anomaly flagged for regulator review: {r.anomaly_reason}</p>}</div>}
+          {r && <div className="mt-4 border-t border-line pt-4"><Kv cols={2} items={[{ label: 'Hash', value: shortHash(r.hash, 16), mono: true }, { label: 'Signature', value: r.signature }, { label: 'Ledger', value: r.ledger }, { label: 'Claim status', value: r.claim_status }]} />{r.anomaly_flag && <p className="mt-3 rounded-lg bg-medium-soft px-3 py-2 text-xs text-medium">Anomaly flagged for regulator review: {r.anomaly_reason}</p>}
+            <div className="mt-4 overflow-hidden rounded-lg border border-line bg-white" data-testid="cert-preview">{r.file_name.toLowerCase().endsWith('.pdf') ? <iframe title={`${r.cert_id} preview`} src={fileUrl(r.preview_url)} className="h-72 w-full" /> : <img src={fileUrl(r.preview_url)} alt={`Certificate ${r.cert_id}`} className="block w-full" />}</div>
+            <p className="mt-2 text-xs text-ink-3">The signed payload is hidden in the least-significant bits of these pixels. Editing any visible value breaks the hash.</p>
+            <Link className="btn btn-secondary btn-sm mt-3" to={ROUTES.verifier}><ShieldCheck size={14} /> Verify it now</Link></div>}
         </Panel>
       </div>
     </>

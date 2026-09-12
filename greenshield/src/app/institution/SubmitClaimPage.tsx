@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { usePlants, useSubmitClaim } from '@/lib/queries';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Panel } from '@/components/common/Panel';
+import { CheckCircle2 } from 'lucide-react';
 import { Field } from '@/components/common/FilterBar';
 import { useToast } from '@/components/common/Toast';
 import { ROUTES } from '@/lib/routes';
@@ -29,6 +30,7 @@ export default function SubmitClaimPage() {
   return (
     <>
       <PageHeader eyebrow="Institution portal" title="Submit claim" subtitle="Your claim will be automatically verified against generation, weather, AI predictions, certificate cryptography, and the REC ledger." />
+      <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
       <Panel>
         <form onSubmit={onSubmit} className="grid gap-4 sm:grid-cols-2">
           <Field id="c-plant" label="Generator plant ID"><select id="c-plant" className="field" required value={f.plant_id} onChange={(e) => setF({ ...f, plant_id: e.target.value })}><option value="">Select plant…</option>{(plants.data?.plants ?? []).map((p) => <option key={p.plant_id} value={p.plant_id}>{p.plant_id} — {p.name}</option>)}</select></Field>
@@ -41,6 +43,11 @@ export default function SubmitClaimPage() {
           <div className="sm:col-span-2 flex justify-end"><button type="submit" className="btn btn-primary" disabled={submit.isPending}>{submit.isPending ? 'Verifying…' : 'Submit for Verification'}</button></div>
         </form>
       </Panel>
+      <Panel title="What happens next" subtitle="Automatic, in seconds">
+        <ol className="space-y-2 text-sm" data-testid="pipeline">{['Claim submitted', 'Certificate validation', 'Steganographic verification', 'Hash verification', 'RSA signature verification', 'Ledger lookup', 'AI generation verification', 'Fraud analysis', 'Government review (if flagged)', 'Final decision'].map((s, i) => <li key={s} className="flex items-center gap-2"><span className="grid h-5 w-5 place-items-center rounded-full bg-primary-soft text-[11px] font-semibold text-primary">{i + 1}</span>{s}</li>)}</ol>
+        <p className="mt-3 inline-flex items-start gap-2 text-xs text-ink-3"><CheckCircle2 size={14} className="mt-0.5 text-low" />Low-risk claims with an authentic, unclaimed certificate are verified immediately and the certificate is marked as claimed by you.</p>
+      </Panel>
+      </div>
     </>
   );
 }
