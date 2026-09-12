@@ -1,0 +1,12 @@
+# GreenShield
+
+> AI-Powered Renewable Energy Verification and REC Fraud Intelligence.
+
+GreenShield makes Renewable Energy Certificate (REC) fraud detectable by construction. Every certificate carries cryptographic proof hidden inside pixel LSBs, verified against AI generation expectations and an immutable ledger.
+
+## Portals & Tools
+- [Landing Page](http://localhost:5174/): Platform overview, system architecture, and entry points.
+- [Public REC Verifier](http://localhost:5174/verifier): Three-layer public certificate authenticity and integrity verifier.
+- [Government Portal](http://localhost:5174/government/dashboard): Verification dashboard, case investigations, and fraud intelligence network.
+- [Generator Portal](http://localhost:5174/generator/dashboard): Generation data logging, plant profile, and AI generation forecasts.
+- [Institution Portal](http://localhost:5174/institution/dashboard): Clean energy claim submission, certificate inventory, and ESG compliance.

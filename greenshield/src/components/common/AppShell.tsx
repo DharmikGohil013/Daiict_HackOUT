@@ -6,7 +6,7 @@ import { Topbar } from './Topbar';
 export function AppShell({ nav, portal, children }: { nav: NavItem[]; portal: string; children?: ReactNode }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="flex min-h-screen bg-bg">
+    <div className="flex min-h-screen bg-transparent">
       <Sidebar nav={nav} portal={portal} open={open} onClose={() => setOpen(false)} />
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar onMenu={() => setOpen(true)} portal={portal} />

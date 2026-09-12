@@ -3,6 +3,7 @@ import '@testing-library/jest-dom/vitest';
 class ResizeObserverShim { observe() {} unobserve() {} disconnect() {} }
 (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver = (globalThis as unknown as { ResizeObserver?: unknown }).ResizeObserver ?? ResizeObserverShim;
 window.scrollTo = () => {};
+HTMLCanvasElement.prototype.getContext = () => null as unknown as CanvasRenderingContext2D;
 
 function memoryStorage(): Storage {
   const store = new Map<string, string>();

@@ -6,6 +6,7 @@ import { ToastProvider } from '@/components/common/Toast';
 import { RequireAuth, RequireRole } from '@/components/common/ProtectedRoute';
 import { LoadingState } from '@/components/common/States';
 import { TopLoader } from '@/components/common/TopLoader';
+import { DotField } from '@/components/common/DotField';
 import { GEN_NAV, GOV_NAV, INST_NAV, ISSUER_NAV } from '@/lib/nav';
 import { ROUTES } from '@/lib/routes';
 import './styles/globals.css';
@@ -48,10 +49,33 @@ export const queryClient = new QueryClient({ defaultOptions: { queries: { retry:
 /** Route table without providers/router so tests can mount it inside a MemoryRouter. */
 export function AppRoutes() {
   return (
-    <>
-      <TopLoader />
-      <Suspense fallback={<div className="p-8"><LoadingState label="Loading GreenShield…" /></div>}>
-        <Routes>
+    <div className="relative min-h-screen">
+      {/* Full space interactive dotted background across all pages */}
+      <div
+        className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
+        style={{ width: '100vw', height: '100vh', opacity: 0.6 }}
+        aria-hidden="true"
+      >
+        <DotField
+          dotRadius={1.5}
+          dotSpacing={16}
+          bulgeStrength={67}
+          glowRadius={160}
+          sparkle={false}
+          waveAmplitude={0}
+          cursorRadius={500}
+          cursorForce={0.1}
+          bulgeOnly
+          gradientFrom="#A855F7"
+          gradientTo="#B497CF"
+          glowColor="#120F17"
+        />
+      </div>
+
+      <div className="relative z-10 flex min-h-screen flex-col">
+        <TopLoader />
+        <Suspense fallback={<div className="p-8"><LoadingState label="Loading GreenShield…" /></div>}>
+          <Routes>
         <Route path={ROUTES.landing} element={<LandingPage />} />
         <Route path={ROUTES.login} element={<LoginPage />} />
         <Route path={ROUTES.verifier} element={<AppShell nav={ISSUER_NAV} portal="verifier"><VerifierPage /></AppShell>} />
@@ -108,9 +132,10 @@ export function AppRoutes() {
           </Route>
         </Route>
         <Route path="*" element={<Navigate to={ROUTES.landing} replace />} />
-      </Routes>
-    </Suspense>
-    </>
+        </Routes>
+      </Suspense>
+    </div>
+  </div>
   );
 }
 
