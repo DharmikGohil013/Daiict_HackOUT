@@ -18,6 +18,8 @@ Demo cases (FinalMD.md §39):
 import os
 import random
 import sys
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 from datetime import date, datetime, timedelta, timezone
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -274,7 +276,7 @@ def seed_claims(rng):
         )
         print(
             f"  {r['claim_id']} {cert_id:9s} {pid} {iid} claimed {claimed / 1000:8.1f} MWh  expected {r['expected_kwh'] / 1000:7.1f}  "
-            f"actual {(r['actual_kwh'] or 0) / 1000:7.1f}  risk {r['risk_score']:3d} {r['risk_level']:8s} cert {r['certificate_status']:11s} → {r['status']}"  # noqa: E501
+            f"actual {(r['actual_kwh'] or 0) / 1000:7.1f}  risk {r['risk_score']:3d} {r['risk_level']:8s} cert {r['certificate_status']:11s} -> {r['status']}"  # noqa: E501
         )
         return r
 
