@@ -1,0 +1,89 @@
+/* GreenShield design tokens — one set of RGB triplets, themed by prefers-color-scheme or data-theme.
+   Institutional palette: deep teal-navy primary, cool neutrals, restrained saffron accent.
+   Semantic risk colours are separate from the accent (FinalMD §41). */
+:root {
+  --bg: 244 246 248;
+  --surface: 255 255 255;
+  --surface-2: 238 242 245;
+  --surface-3: 226 232 237;
+  --line: 214 221 227;
+  --line-strong: 176 188 199;
+  --ink: 20 32 43;
+  --ink-2: 75 90 104;
+  --ink-3: 123 135 148;
+  --primary: 15 76 92;
+  --primary-strong: 10 54 66;
+  --primary-soft: 227 240 242;
+  --primary-fg: 255 255 255;
+  --accent: 199 112 32;
+  --accent-soft: 252 240 226;
+  --low: 27 122 84;
+  --low-soft: 226 244 235;
+  --medium: 184 122 12;
+  --medium-soft: 252 243 222;
+  --high: 204 79 30;
+  --high-soft: 252 234 224;
+  --critical: 178 35 24;
+  --critical-soft: 251 228 226;
+  --info: 31 108 160;
+  --info-soft: 226 238 249;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: 14 21 25;
+    --surface: 22 32 42;
+    --surface-2: 30 42 53;
+    --surface-3: 40 54 67;
+    --line: 44 58 71;
+    --line-strong: 74 92 108;
+    --ink: 231 237 242;
+    --ink-2: 167 180 192;
+    --ink-3: 123 135 148;
+    --primary: 95 179 196;
+    --primary-strong: 143 208 220;
+    --primary-soft: 18 56 69;
+    --primary-fg: 10 21 26;
+    --accent: 232 150 66;
+    --accent-soft: 63 42 20;
+    --low: 84 196 138;
+    --low-soft: 20 52 38;
+    --medium: 226 170 60;
+    --medium-soft: 61 46 14;
+    --high: 241 120 70;
+    --high-soft: 68 34 20;
+    --critical: 236 96 86;
+    --critical-soft: 70 26 24;
+    --info: 96 165 218;
+    --info-soft: 24 44 62;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: 14 21 25;
+  --surface: 22 32 42;
+  --surface-2: 30 42 53;
+  --surface-3: 40 54 67;
+  --line: 44 58 71;
+  --line-strong: 74 92 108;
+  --ink: 231 237 242;
+  --ink-2: 167 180 192;
+  --ink-3: 123 135 148;
+  --primary: 95 179 196;
+  --primary-strong: 143 208 220;
+  --primary-soft: 18 56 69;
+  --primary-fg: 10 21 26;
+  --accent: 232 150 66;
+  --accent-soft: 63 42 20;
+  --low: 84 196 138;
+  --low-soft: 20 52 38;
+  --medium: 226 170 60;
+  --medium-soft: 61 46 14;
+  --high: 241 120 70;
+  --high-soft: 68 34 20;
+  --critical: 236 96 86;
+  --critical-soft: 70 26 24;
+  --info: 96 165 218;
+  --info-soft: 24 44 62;
+  color-scheme: dark;
+}
