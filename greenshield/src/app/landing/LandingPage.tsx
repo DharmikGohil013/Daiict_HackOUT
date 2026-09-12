@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Brain, FileCheck2, ShieldCheck, Landmark, Copy, ScrollText, Radar } from 'lucide-react';
 import { ROUTES } from '@/lib/routes';
 import { SampleDataBadge } from '@/components/common/SampleDataBadge';
+import DotField from './DotField';
 
 const FEATURES = [
   { icon: Brain, title: 'AI Generation Prediction', text: 'Weather, capacity, location and history estimate what each plant could really have produced.' },
@@ -42,31 +43,54 @@ export default function LandingPage() {
       </header>
 
       <main id="main-content" className="flex-1">
-        <section aria-labelledby="hero-title" className="mx-auto max-w-6xl px-6 pb-12 pt-10 md:pt-16">
-          <div className="label mb-3 text-primary">AI-Powered Renewable Energy Verification &amp; REC Fraud Intelligence</div>
-          <h1 id="hero-title" className="max-w-3xl text-4xl leading-[1.08] md:text-5xl">
-            AI-Powered Renewable Energy Verification
-          </h1>
-          <p className="mt-4 max-w-2xl text-lg text-ink-2">
-            Verify renewable energy claims, predict generation, detect certificate tampering, and prevent duplicate REC claims.
-          </p>
-          <p className="mt-2 font-display text-base italic text-ink-2">
-            Don&apos;t trust the claim. Verify it against reality.
-          </p>
-          <div className="mt-8 flex flex-wrap items-center gap-3">
-            <Link to={`${ROUTES.login}?role=government`} className="btn btn-primary min-h-[42px]" aria-label="Government Login">
-              Government Login <ArrowRight size={16} aria-hidden="true" />
-            </Link>
-            <Link to={`${ROUTES.login}?role=generator`} className="btn btn-secondary min-h-[42px]" aria-label="Generator Login">
-              Generator Login
-            </Link>
-            <Link to={`${ROUTES.login}?role=institution`} className="btn btn-secondary min-h-[42px]" aria-label="Institution Login">
-              Institution Login
-            </Link>
+        <div className="relative overflow-hidden border-b border-line/40">
+          <div
+            className="pointer-events-none absolute inset-0 z-0 opacity-75"
+            style={{ width: '100%', height: '100%', minHeight: '520px', position: 'absolute' }}
+            aria-hidden="true"
+          >
+            <DotField
+              dotRadius={1.5}
+              dotSpacing={14}
+              bulgeStrength={67}
+              glowRadius={160}
+              sparkle={false}
+              waveAmplitude={0}
+              cursorRadius={500}
+              cursorForce={0.1}
+              bulgeOnly
+              gradientFrom="#A855F7"
+              gradientTo="#B497CF"
+              glowColor="#120F17"
+            />
           </div>
-        </section>
 
-        <section aria-labelledby="workflow-heading" className="mx-auto max-w-6xl px-6 pb-12">
+          <section aria-labelledby="hero-title" className="relative z-10 mx-auto max-w-6xl px-6 pb-16 pt-10 md:pt-16">
+            <div className="label mb-3 text-primary">AI-Powered Renewable Energy Verification &amp; REC Fraud Intelligence</div>
+            <h1 id="hero-title" className="max-w-3xl text-4xl leading-[1.08] md:text-5xl">
+              AI-Powered Renewable Energy Verification
+            </h1>
+            <p className="mt-4 max-w-2xl text-lg text-ink-2">
+              Verify renewable energy claims, predict generation, detect certificate tampering, and prevent duplicate REC claims.
+            </p>
+            <p className="mt-2 font-display text-base italic text-ink-2">
+              Don&apos;t trust the claim. Verify it against reality.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <Link to={`${ROUTES.login}?role=government`} className="btn btn-primary min-h-[42px]" aria-label="Government Login">
+                Government Login <ArrowRight size={16} aria-hidden="true" />
+              </Link>
+              <Link to={`${ROUTES.login}?role=generator`} className="btn btn-secondary min-h-[42px]" aria-label="Generator Login">
+                Generator Login
+              </Link>
+              <Link to={`${ROUTES.login}?role=institution`} className="btn btn-secondary min-h-[42px]" aria-label="Institution Login">
+                Institution Login
+              </Link>
+            </div>
+          </section>
+        </div>
+
+        <section aria-labelledby="workflow-heading" className="mx-auto max-w-6xl px-6 py-12">
           <h2 id="workflow-heading" className="sr-only">
             End-to-End Verification Lifecycle
           </h2>
