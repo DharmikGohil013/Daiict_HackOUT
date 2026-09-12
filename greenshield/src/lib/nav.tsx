@@ -14,6 +14,7 @@ export const GOV_NAV: NavItem[] = [
   { to: ROUTES.government.audit, label: 'Audit Trail', icon: ScrollText },
   { to: ROUTES.government.analytics, label: 'Analytics', icon: BarChart3 },
   { to: ROUTES.government.settings, label: 'Settings', icon: Settings },
+  { to: ROUTES.government.recVerifier, label: 'REC Verifier', icon: ShieldCheck },
 ];
 
 export const GEN_NAV: NavItem[] = [

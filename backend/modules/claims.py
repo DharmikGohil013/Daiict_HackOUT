@@ -330,38 +330,17 @@ def submit_claim(
         audit.record(
             "Duplicate claim blocked", "greenshield-ledger", claim_id, cert_id, transaction_id, detail=cert["reason"]
         )
-    elif cert["status"] in ("VALID", "NOT_PROVIDED") and LEVEL_ORDER[risk["risk_level"]] <= LEVEL_ORDER.get(
-        auto_verify_max_level(), 1
-    ):
-        if mark_claimed(cert_id, institution_id):
-            status, decision = "verified", "auto_verified"
-            audit.record(
-                "Certificate marked claimed",
-                "greenshield-ledger",
-                claim_id,
-                cert_id,
-                transaction_id,
-                detail=f"claimed by {institution_id}",
-            )
-            audit.record(
-                "Claim auto-verified",
-                "greenshield-risk",
-                claim_id,
-                cert_id,
-                transaction_id,
-                detail=f"risk {risk['total_score']} ≤ auto-verify threshold",
-            )
-        else:
-            cert["status"], cert["reason"] = "DUPLICATE", "Certificate was claimed by another party moments earlier."
-            status, decision, note = "rejected", "duplicate_blocked", cert["reason"]
-            audit.record(
-                "Duplicate claim blocked",
-                "greenshield-ledger",
-                claim_id,
-                cert_id,
-                transaction_id,
-                detail=cert["reason"],
-            )
+    elif cert["status"] in ("VALID", "NOT_PROVIDED"):
+        # Always send valid certificates to submitted for REC Verifier
+        status, decision = "submitted", "manual_review_required"
+        audit.record(
+            "Claim pending verification",
+            "greenshield-risk",
+            claim_id,
+            cert_id,
+            transaction_id,
+            detail=f"claim requires government review",
+        )
 
     with get_db() as conn:
         conn.execute(
@@ -626,11 +605,12 @@ def claim_stats(plant_id: Optional[str] = None, institution_id: Optional[str] = 
         return {
             "total_claims": total,
             "active_claims": sum(
-                by_status.get(s, 0) for s in ("submitted", "verifying", "verified", "flagged", "evidence_requested")
+                by_status.get(s, 0) for s in ("submitted", "verifying", "verified", "flagged", "evidence_requested", "pending_approval")
             ),
             "pending_verification": by_status.get("flagged", 0)
             + by_status.get("evidence_requested", 0)
-            + by_status.get("verifying", 0),
+            + by_status.get("verifying", 0)
+            + by_status.get("pending_approval", 0),
             "verified_claims": by_status.get("verified", 0) + by_status.get("approved", 0),
             "flagged_claims": by_status.get("flagged", 0) + by_status.get("evidence_requested", 0),
             "rejected_claims": by_status.get("rejected", 0),

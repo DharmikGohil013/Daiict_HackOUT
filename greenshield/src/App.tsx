@@ -28,6 +28,7 @@ const GovCertificates = lazy(() => import('@/app/government/CertificatesPage'));
 const GovAudit = lazy(() => import('@/app/government/AuditPage'));
 const GovAnalytics = lazy(() => import('@/app/government/AnalyticsPage'));
 const GovSettings = lazy(() => import('@/app/government/SettingsPage'));
+const GovRecVerifier = lazy(() => import('@/app/government/RecVerifierPage'));
 const GenDashboard = lazy(() => import('@/app/generator/DashboardPage'));
 const GenGeneration = lazy(() => import('@/app/generator/GenerationPage'));
 const GenForecast = lazy(() => import('@/app/generator/ForecastPage'));
@@ -99,6 +100,7 @@ export function AppRoutes() {
               <Route path="audit" element={<GovAudit />} />
               <Route path="analytics" element={<GovAnalytics />} />
               <Route path="settings" element={<GovSettings />} />
+              <Route path="rec-verifier" element={<GovRecVerifier />} />
             </Route>
           </Route>
           <Route element={<RequireRole roles={['generator', 'admin']} />}>

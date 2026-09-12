@@ -20,6 +20,7 @@ export const ROUTES = {
     audit: '/government/audit',
     analytics: '/government/analytics',
     settings: '/government/settings',
+    recVerifier: '/government/rec-verifier',
   },
   generator: {
     dashboard: '/generator/dashboard',

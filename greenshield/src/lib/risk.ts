@@ -27,6 +27,7 @@ export function claimStatusTone(status: ClaimStatus | string | null | undefined)
     case 'rejected': return 'critical';
     case 'evidence_requested':
     case 'submitted':
+    case 'pending_approval':
     case 'verifying': return 'medium';
     default: return 'neutral';
   }
