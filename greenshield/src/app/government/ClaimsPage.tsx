@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useClaims } from '@/lib/queries';
 import { PageHeader } from '@/components/common/PageHeader';
 import { DataTable, type Column } from '@/components/common/DataTable';
@@ -41,6 +41,7 @@ export default function ClaimsPage() {
     { key: 'risk', header: 'Risk', render: (c) => <RiskBadge score={c.risk_score} level={c.risk_level} />, sortValue: (c) => c.risk_score },
     { key: 'cert_status', header: 'Certificate', render: (c) => <StatusBadge status={c.certificate_status} kind="certificate" /> },
     { key: 'status', header: 'Claim', render: (c) => <StatusBadge status={c.status} kind="claim" /> },
+    { key: 'actions', header: 'Actions', render: (c) => <span className="flex gap-1" onClick={(e) => e.stopPropagation()}><Link className="btn btn-secondary btn-sm" to={ROUTES.government.claim(c.claim_id)}>Verify</Link>{c.case_id && <Link className="btn btn-ghost btn-sm" to={ROUTES.government.investigation(c.case_id)}>Case</Link>}</span> },
   ];
   return (
     <>
