@@ -6,7 +6,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { configureStore } from '@reduxjs/toolkit';
 
 vi.mock('../services/api', async () => {
-  const { route, LOGIN } = await import('./mockApi');
+  const { route, LOGIN } = await import('../services/mockData');
   const calls = [];
   const api = {
     get: vi.fn(async (url, cfg) => { calls.push(['GET', url, cfg]); return { data: route('GET', url) }; }),
@@ -14,7 +14,7 @@ vi.mock('../services/api', async () => {
     __calls: calls,
     __LOGIN: LOGIN,
   };
-  return { default: api, api, API_BASE: 'http://api.test', TOKEN_KEY: 'rec_guard_token', USER_KEY: 'rec_guard_user', fileUrl: (p) => `http://api.test${p}` };
+  return { default: api, api, API_BASE: 'http://api.test', MOCK_API: false, TOKEN_KEY: 'rec_guard_token', USER_KEY: 'rec_guard_user', fileUrl: (p) => `http://api.test${p}` };
 });
 
 import api from '../services/api';
@@ -22,7 +22,7 @@ import issueReducer from '../store/issueSlice';
 import verifyReducer from '../store/verifySlice';
 import authReducer from '../store/authSlice';
 import { AppRoutes } from '../App';
-import { FRAUD_RESULT } from './mockApi';
+import { FRAUD_RESULT } from '../services/mockData';
 
 function makeStore(preloaded) {
   return configureStore({

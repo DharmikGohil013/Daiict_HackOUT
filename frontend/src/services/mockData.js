@@ -81,9 +81,22 @@ export const LOGIN = {
   user: { user_id: 1, email: 'admin@recguard.io', role: 'admin', organisation: 'REC Guard', created_at: '2026-01-01' },
 };
 
-/** Route a mocked request to a canned response by method + URL. */
-export function route(method, url) {
+/**
+ * Route a mocked request to a canned response by method + URL.
+ * Used by the Vitest suite and by the browser mock mode (VITE_MOCK_API=true).
+ */
+export function route(method, url, config) {
   if (url.startsWith('/api/admin/dashboard')) return DASHBOARD;
+  if (url.match(/^\/api\/admin\/anomalies\/\d+\/resolve/)) return { success: true };
+  if (url.startsWith('/api/admin/anomalies')) return { success: true, anomalies: DASHBOARD.open_anomalies };
+  if (url.startsWith('/api/admin/verifications')) return { success: true, verifications: DASHBOARD.recent_verifications };
+  if (url.match(/^\/api\/ledger\/[^/]+\/(claim|revoke)/)) return { success: true };
+  if (url === '/api/issuers') return { success: true, issuers: [{ issuer_id: 'ISSUER-GreenCert-04', issuer_name: 'GreenCert', registered_at: '2026-01-01', is_active: 1 }] };
+  if (url === '/api/verify' && config?.data instanceof FormData) {
+    const name = String(config.data.get('file')?.name || '').toLowerCase();
+    if (/tamper|forged|fake|fraud/.test(name)) return FRAUD_RESULT;
+    if (config.data.get('claim') === 'true') return { ...VALID_RESULT, claimed: true, ledger_record: { ...VALID_RESULT.ledger_record, status: 'claimed', claimed_by: config.data.get('claimed_by') || 'you', claimed_at: new Date().toISOString() } };
+  }
   if (url.startsWith('/api/ledger/stats')) return DASHBOARD.stats;
   if (url.match(/^\/api\/ledger\/[^/]+\/history/)) return { success: true, verifications: DASHBOARD.recent_verifications };
   if (url.startsWith('/api/ledger')) return LEDGER;

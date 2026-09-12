@@ -13,6 +13,7 @@ The ledger is the single source of truth. It records:
 
 import os
 import sqlite3
+import uuid
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
@@ -20,6 +21,7 @@ from typing import Any, Dict, List, Optional
 import structlog
 
 from config import db_path
+from modules.gs_schema import GREENSHIELD_SCHEMA_SQL
 
 log = structlog.get_logger()
 
@@ -40,6 +42,7 @@ SCHEMA_SQL = """
 -- ============================================================
 CREATE TABLE IF NOT EXISTS rec_ledger (
     cert_id         TEXT PRIMARY KEY,       -- Unique certificate ID (e.g. REC-WND-2026-0091)
+    uid             TEXT UNIQUE,            -- Immutable internal identity (UUID4)
     generator_id    TEXT NOT NULL,           -- Generator plant/facility ID
     source_type     TEXT NOT NULL,           -- Energy source: Wind, Solar, Hydro, Biomass, etc.
     energy_kwh      REAL NOT NULL,           -- Energy generated in kWh
@@ -116,8 +119,11 @@ CREATE TABLE IF NOT EXISTS users (
     email           TEXT UNIQUE NOT NULL,
     password_hash   TEXT NOT NULL,
     role            TEXT NOT NULL DEFAULT 'auditor'
-                    CHECK(role IN ('regulator', 'issuer', 'buyer', 'auditor', 'admin')),
+                    CHECK(role IN ('government', 'generator', 'institution', 'issuer',
+                                   'regulator', 'buyer', 'auditor', 'admin')),
     organisation    TEXT,
+    entity_id       TEXT,                    -- plant_id for generators, institution_id for institutions
+    display_name    TEXT,
     created_at      TEXT NOT NULL
 );
 
@@ -170,10 +176,40 @@ def get_db():
 # ─────────────────────────────────────────────
 
 
+def _migrate(conn) -> None:
+    """Bring an existing database up to the current schema (idempotent, additive)."""
+    cols = {r[1] for r in conn.execute("PRAGMA table_info(rec_ledger)")}
+    if cols and "uid" not in cols:
+        conn.execute("ALTER TABLE rec_ledger ADD COLUMN uid TEXT")
+        for (cert_id,) in conn.execute("SELECT cert_id FROM rec_ledger WHERE uid IS NULL").fetchall():
+            conn.execute("UPDATE rec_ledger SET uid = ? WHERE cert_id = ?", (str(uuid.uuid4()), cert_id))
+        conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_ledger_uid ON rec_ledger(uid)")
+
+    ucols = {r[1] for r in conn.execute("PRAGMA table_info(users)")}
+    if ucols and "entity_id" not in ucols:
+        # Recreate users with the wider role CHECK and the new columns, keeping existing rows.
+        conn.execute("ALTER TABLE users RENAME TO users_old")
+        conn.executescript(
+            SCHEMA_SQL[
+                SCHEMA_SQL.index("CREATE TABLE IF NOT EXISTS users") : SCHEMA_SQL.index(
+                    ");", SCHEMA_SQL.index("CREATE TABLE IF NOT EXISTS users")
+                )
+                + 2
+            ]
+        )
+        conn.execute(
+            "INSERT INTO users (user_id, email, password_hash, role, organisation, created_at) "
+            "SELECT user_id, email, password_hash, role, organisation, created_at FROM users_old"
+        )
+        conn.execute("DROP TABLE users_old")
+
+
 def init_db():
     """Initialize all tables. Safe to call multiple times (idempotent)."""
     with get_db() as conn:
         conn.executescript(SCHEMA_SQL)
+        conn.executescript(GREENSHIELD_SCHEMA_SQL)
+        _migrate(conn)
     log.info("db_initialized", path=get_db_path())
 
 
@@ -187,16 +223,17 @@ def register_certificate(cert_data: dict) -> bool:
     Register a newly issued certificate in the ledger.
     Returns True on success, False if cert_id already exists.
     """
+    cert_data = {"uid": str(uuid.uuid4()), **cert_data}
     with get_db() as conn:
         try:
             conn.execute(
                 """
                 INSERT INTO rec_ledger (
-                    cert_id, generator_id, source_type, energy_kwh,
+                    uid, cert_id, generator_id, source_type, energy_kwh,
                     generation_date, issuer_id, data_hash, signature,
                     status, issued_at, cert_file_path
                 ) VALUES (
-                    :cert_id, :generator_id, :source_type, :energy_kwh,
+                    :uid, :cert_id, :generator_id, :source_type, :energy_kwh,
                     :generation_date, :issuer_id, :data_hash, :signature,
                     'issued', :issued_at, :cert_file_path
                 )
@@ -217,32 +254,36 @@ def lookup_certificate(cert_id: str) -> Optional[dict]:
         return dict(row) if row else None
 
 
+def lookup_certificate_by_hash(data_hash: str) -> Optional[dict]:
+    """Find the ledger record whose signed hash matches (detects re-labelled certificates)."""
+    with get_db() as conn:
+        row = conn.execute("SELECT * FROM rec_ledger WHERE data_hash = ?", (data_hash,)).fetchone()
+        return dict(row) if row else None
+
+
 def mark_claimed(cert_id: str, claimed_by: str) -> bool:
     """
-    Mark a certificate as claimed by a buyer.
+    Mark a certificate as claimed by a buyer — atomically.
+
+    A single conditional UPDATE (status must still be 'issued') runs under SQLite's
+    exclusive write lock, so two claimants racing for the same certificate cannot
+    both succeed: exactly one UPDATE matches a row, the other matches none.
     Returns True on success, False if not found or already claimed/revoked.
     """
     with get_db() as conn:
-        row = conn.execute("SELECT status FROM rec_ledger WHERE cert_id = ?", (cert_id,)).fetchone()
-
-        if not row:
-            return False
-        if row["status"] != "issued":
-            log.warning("cert_not_claimable", cert_id=cert_id, status=row["status"])
-            return False
-
-        conn.execute(
+        cur = conn.execute(
             """
             UPDATE rec_ledger
-            SET status = 'claimed',
-                claimed_by = ?,
-                claimed_at = ?
-            WHERE cert_id = ?
-        """,
+            SET status = 'claimed', claimed_by = ?, claimed_at = ?
+            WHERE cert_id = ? AND status = 'issued'
+            """,
             (claimed_by, _now(), cert_id),
         )
-        log.info("cert_claimed", cert_id=cert_id, claimed_by=claimed_by)
-        return True
+        if cur.rowcount == 1:
+            log.info("cert_claimed", cert_id=cert_id, claimed_by=claimed_by)
+            return True
+        log.warning("cert_not_claimable", cert_id=cert_id)
+        return False
 
 
 def revoke_certificate(cert_id: str, revoked_by: str) -> bool:
@@ -585,16 +626,21 @@ def get_all_issuers() -> List[dict]:
 
 
 def create_user(
-    email: str, password_hash: str, role: str = "auditor", organisation: Optional[str] = None
+    email: str,
+    password_hash: str,
+    role: str = "auditor",
+    organisation: Optional[str] = None,
+    entity_id: Optional[str] = None,
+    display_name: Optional[str] = None,
 ) -> Optional[dict]:
     with get_db() as conn:
         try:
             cur = conn.execute(
                 """
-                INSERT INTO users (email, password_hash, role, organisation, created_at)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO users (email, password_hash, role, organisation, entity_id, display_name, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
-                (email.lower().strip(), password_hash, role, organisation, _now()),
+                (email.lower().strip(), password_hash, role, organisation, entity_id, display_name, _now()),
             )
             row = conn.execute("SELECT * FROM users WHERE user_id = ?", (cur.lastrowid,)).fetchone()
             return dict(row)
@@ -612,3 +658,13 @@ def get_user_by_id(user_id: int) -> Optional[dict]:
     with get_db() as conn:
         row = conn.execute("SELECT * FROM users WHERE user_id = ?", (int(user_id),)).fetchone()
         return dict(row) if row else None
+
+
+def list_users(role: Optional[str] = None) -> List[dict]:
+    query = "SELECT user_id, email, role, organisation, entity_id, display_name, created_at FROM users"
+    params: List[Any] = []
+    if role:
+        query += " WHERE role = ?"
+        params.append(role)
+    with get_db() as conn:
+        return [dict(r) for r in conn.execute(query + " ORDER BY user_id", params).fetchall()]

@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { LogIn, LogOut, UserCircle2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { logout, selectUser } from '../../store/authSlice';
+import { MOCK_API } from '../../services/api';
 
 const TITLES = {
   '/': ['Regulator Dashboard', 'System-wide issuance, verification and fraud activity'],
@@ -32,6 +33,11 @@ export default function Header() {
         <p>{subtitle}</p>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+        {MOCK_API && (
+          <span className="badge badge-amber" title="VITE_MOCK_API=true — responses come from bundled sample data, no backend">
+            Sample data · no backend
+          </span>
+        )}
         {user ? (
           <>
             <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>

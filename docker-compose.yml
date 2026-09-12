@@ -1,6 +1,6 @@
 # Development stack: Flask (auto-reload, source mounted) + nginx-served frontend.
 #   docker compose up --build
-#   → UI  http://localhost:3000   API http://localhost:5000
+#   → GreenShield UI http://localhost:3001 · REC Guard UI http://localhost:3000 · API http://localhost:5000
 services:
   backend:
     build:
@@ -20,7 +20,9 @@ services:
       - TEMP_STORAGE_PATH=storage/temp/
       - RSA_PRIVATE_KEY_PATH=keys/private.pem
       - RSA_PUBLIC_KEY_PATH=keys/public.pem
-      - CORS_ORIGINS=http://localhost:3000,http://localhost:5173
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:3001,http://localhost:5173,http://localhost:5174
+      - GENERATION_MODEL_PATH=models/generation_rf.pkl
+      - UPLOADS_PATH=storage/uploads/
       - LOG_FORMAT=console
       - ADMIN_EMAIL=admin@recguard.io
       - ADMIN_PASSWORD=changeme
@@ -36,6 +38,16 @@ services:
       dockerfile: docker/Dockerfile.frontend
     ports:
       - "${FRONTEND_PORT:-3000}:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  greenshield:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.greenshield
+    ports:
+      - "${GREENSHIELD_PORT:-3001}:80"
     depends_on:
       - backend
     restart: unless-stopped

@@ -1,6 +1,7 @@
 # Production stack: gunicorn backend + nginx frontend, secrets from .env
 #   cp backend/.env.example .env  (then set real secrets)
 #   docker compose -f docker-compose.prod.yml up -d --build
+#   → GreenShield on :80, REC Guard UI on :8080
 services:
   backend:
     build:
@@ -26,12 +27,23 @@ services:
       timeout: 5s
       retries: 3
 
+  greenshield:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.greenshield
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: always
+
   frontend:
     build:
       context: .
       dockerfile: docker/Dockerfile.frontend
     ports:
-      - "80:80"
+      - "8080:80"
     depends_on:
       backend:
         condition: service_healthy

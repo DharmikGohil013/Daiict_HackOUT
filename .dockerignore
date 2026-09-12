@@ -16,3 +16,4 @@ backend/storage/temp/*
 .github
 *.md
 !README.md
+greenshield/.env

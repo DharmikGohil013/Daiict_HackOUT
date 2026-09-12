@@ -25,6 +25,7 @@ def session_keys(tmp_path_factory):
     mp.setenv("RSA_PUBLIC_KEY_PATH", pub)
     mp.setenv("LOG_LEVEL", "WARNING")
     mp.setenv("LOG_FORMAT", "console")
+    mp.setenv("GENERATION_MODEL_PATH", str(key_dir / "generation_rf.pkl"))
     yield {"private": priv, "public": pub}
     mp.undo()
 
