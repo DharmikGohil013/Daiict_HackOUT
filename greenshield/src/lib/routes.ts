@@ -7,6 +7,7 @@ export const ROUTES = {
     dashboard: '/government/dashboard',
     claims: '/government/claims',
     claim: (id: string) => `/government/claims/${id}`,
+    approvals: '/government/approvals',
     investigations: '/government/investigations',
     investigation: (id: string) => `/government/investigations/${id}`,
     plants: '/government/plants',

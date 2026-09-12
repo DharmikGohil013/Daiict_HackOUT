@@ -185,6 +185,12 @@ def _migrate(conn) -> None:
             conn.execute("UPDATE rec_ledger SET uid = ? WHERE cert_id = ?", (str(uuid.uuid4()), cert_id))
         conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_ledger_uid ON rec_ledger(uid)")
 
+    g_cols = {r[1] for r in conn.execute("PRAGMA table_info(generation_data)")}
+    if g_cols and "status" not in g_cols:
+        conn.execute("ALTER TABLE generation_data ADD COLUMN status TEXT NOT NULL DEFAULT 'approved'")
+        # Default existing records to 'approved' to preserve previous behavior
+        conn.execute("UPDATE generation_data SET status = 'approved' WHERE status IS NULL OR status = ''")
+
     ucols = {r[1] for r in conn.execute("PRAGMA table_info(users)")}
     if ucols and "entity_id" not in ucols:
         # Recreate users with the wider role CHECK and the new columns, keeping existing rows.

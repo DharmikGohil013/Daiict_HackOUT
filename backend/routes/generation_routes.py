@@ -39,6 +39,12 @@ def _ingest(plant_id: str, rows: list, source: str, actor: str):
     errors = validate_generation_rows(rows)
     if errors:
         return jsonify({"success": False, "error": "Validation failed", "details": errors}), 422
+    
+    dates_to_check = set(str(r["date"])[:10] for r in rows)
+    for day in dates_to_check:
+        if registry.get_generation(plant_id, start=day, end=day):
+            return jsonify({"success": False, "error": f"Data already uploaded for date {day}."}), 400
+
     for r in rows:
         registry.upsert_generation(
             plant_id,
@@ -130,11 +136,23 @@ def get_generation(plant_id):
         limit = max(1, min(int(request.args.get("limit", 1000)), 5000))
     except ValueError:
         limit = 1000
+    from modules.ledger import get_db
+    import os
+    
     rows = registry.get_generation(plant_id, start, end, limit=limit)
     preds = {p["target_date"]: p for p in registry.latest_predictions(plant_id, start, end)}
+    
+    with get_db() as conn:
+        certs = conn.execute("SELECT generation_date, cert_file_path, cert_id FROM rec_ledger WHERE generator_id = ?", (plant_id,)).fetchall()
+        cert_map = {c["generation_date"]: dict(c) for c in certs}
+        
     for r in rows:
         p = preds.get(r["date"])
         r["predicted_kwh"] = p["predicted_kwh"] if p and r.get("hour") is None else None
+        c = cert_map.get(r["date"])
+        if c:
+            r["cert_id"] = c["cert_id"]
+            r["file_name"] = os.path.basename(c["cert_file_path"]) if c.get("cert_file_path") else None
     return jsonify(
         {
             "success": True,

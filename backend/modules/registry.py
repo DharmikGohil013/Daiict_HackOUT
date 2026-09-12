@@ -128,17 +128,18 @@ def upsert_generation(
     source: str = "meter",
     submitted_by: Optional[str] = None,
     submitted_at: Optional[str] = None,
+    status: str = "pending",
 ) -> None:
     with get_db() as conn:
         conn.execute(
             """
             INSERT INTO generation_data (plant_id, date, hour, generation_kwh, meter_reading_kwh, operating_hours,
-                                         source, submitted_by, submitted_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                         source, submitted_by, submitted_at, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(plant_id, date, hour) DO UPDATE SET
                 generation_kwh = excluded.generation_kwh, meter_reading_kwh = excluded.meter_reading_kwh,
                 operating_hours = excluded.operating_hours, source = excluded.source,
-                submitted_by = excluded.submitted_by, submitted_at = excluded.submitted_at
+                submitted_by = excluded.submitted_by, submitted_at = excluded.submitted_at, status = excluded.status
             """,
             (
                 plant_id,
@@ -150,6 +151,7 @@ def upsert_generation(
                 source,
                 submitted_by,
                 submitted_at or _now(),
+                status,
             ),
         )
 
@@ -173,6 +175,46 @@ def get_generation(
         if r.get("hour") == -1:
             r["hour"] = None
     return rows
+
+
+def get_officer_generation(status: Optional[str] = None, plant_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    query = """
+        SELECT g.*, p.name as plant_name, p.energy_type, p.capacity_mw 
+        FROM generation_data g
+        JOIN plants p ON g.plant_id = p.plant_id
+        WHERE 1=1
+    """
+    params = []
+    if status and status != 'all':
+        query += " AND g.status = ?"
+        params.append(status)
+    if plant_id and plant_id != 'all':
+        query += " AND g.plant_id = ?"
+        params.append(plant_id)
+        
+    query += " ORDER BY g.submitted_at DESC"
+    with get_db() as conn:
+        rows = [dict(r) for r in conn.execute(query, params).fetchall()]
+    for r in rows:
+        if r.get("hour") == -1:
+            r["hour"] = None
+    return rows
+
+def get_officer_generation_stats() -> Dict[str, int]:
+    query = "SELECT status, COUNT(*) FROM generation_data GROUP BY status"
+    with get_db() as conn:
+        rows = conn.execute(query).fetchall()
+        res = {"pending": 0, "approved": 0, "declined": 0}
+        for row in rows:
+            if row[0] in res:
+                res[row[0]] = row[1]
+        return res
+
+
+def update_generation_status(id: int, status: str) -> bool:
+    with get_db() as conn:
+        return conn.execute("UPDATE generation_data SET status = ? WHERE id = ?", (status, id)).rowcount == 1
+
 
 
 def sum_generation(plant_id: str, start: str, end: str) -> Optional[float]:

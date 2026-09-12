@@ -62,6 +62,7 @@ def create_app(test_config: dict = None):
     from routes.registry_routes import registry_bp
     from routes.settings_routes import settings_bp
     from routes.verify_routes import verify_bp
+    from routes.officer_routes import officer_bp
 
     # REC Guard (Module 1 / Module 2)
     app.register_blueprint(issue_bp, url_prefix="/api")
@@ -80,6 +81,7 @@ def create_app(test_config: dict = None):
     app.register_blueprint(audit_bp, url_prefix="/api")
     app.register_blueprint(dashboard_bp, url_prefix="/api")
     app.register_blueprint(settings_bp, url_prefix="/api")
+    app.register_blueprint(officer_bp, url_prefix="/api")
     # Shared
     app.register_blueprint(config_bp, url_prefix="/api")
 

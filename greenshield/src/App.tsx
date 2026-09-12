@@ -13,6 +13,7 @@ import './styles/globals.css';
 const LandingPage = lazy(() => import('@/app/landing/LandingPage'));
 const LoginPage = lazy(() => import('@/app/login/LoginPage'));
 const GovDashboard = lazy(() => import('@/app/government/DashboardPage'));
+const GovApprovals = lazy(() => import('@/app/government/ApprovalsPage'));
 const GovClaims = lazy(() => import('@/app/government/ClaimsPage'));
 const GovClaimDetail = lazy(() => import('@/app/government/ClaimDetailPage'));
 const GovInvestigations = lazy(() => import('@/app/government/InvestigationsPage'));
@@ -59,6 +60,7 @@ export function AppRoutes() {
             <Route path="/government" element={<AppShell nav={GOV_NAV} portal="government" />}>
               <Route index element={<Navigate to={ROUTES.government.dashboard} replace />} />
               <Route path="dashboard" element={<GovDashboard />} />
+              <Route path="approvals" element={<GovApprovals />} />
               <Route path="claims" element={<GovClaims />} />
               <Route path="claims/:id" element={<GovClaimDetail />} />
               <Route path="investigations" element={<GovInvestigations />} />

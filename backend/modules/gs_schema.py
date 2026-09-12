@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS plants (
     operator_email  TEXT,
     registered_at   TEXT NOT NULL,
     status          TEXT NOT NULL DEFAULT 'active'
-                    CHECK(status IN ('active', 'under_review', 'suspended'))
+                    CHECK(status IN ('active', 'under_review', 'suspended', 'flagged'))
 );
 
 -- ============================================================
@@ -53,6 +53,8 @@ CREATE TABLE IF NOT EXISTS generation_data (
                       CHECK(source IN ('meter', 'manual', 'csv', 'seed')),
     submitted_by      TEXT,
     submitted_at      TEXT NOT NULL,
+    status            TEXT NOT NULL DEFAULT 'approved'
+                      CHECK(status IN ('pending', 'approved', 'declined')),
     UNIQUE(plant_id, date, hour)
 );
 

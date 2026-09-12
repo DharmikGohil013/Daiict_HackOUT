@@ -5,6 +5,7 @@ import { ROUTES } from './routes';
 export const GOV_NAV: NavItem[] = [
   { to: ROUTES.government.dashboard, label: 'Dashboard', icon: LayoutDashboard },
   { to: ROUTES.government.claims, label: 'Claims', icon: FileSearch },
+  { to: ROUTES.government.approvals, label: 'Issuing Approvals', icon: FilePlus2 },
   { to: ROUTES.government.investigations, label: 'Investigations', icon: SearchCheck },
   { to: ROUTES.government.plants, label: 'Plants', icon: Factory },
   { to: ROUTES.government.institutions, label: 'Institutions', icon: Building2 },

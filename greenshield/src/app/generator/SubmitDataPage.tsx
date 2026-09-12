@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, type FormEvent, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSubmitGeneration, useUploadGeneration } from '@/lib/queries';
 import { useAuth } from '@/lib/auth';
 import { PageHeader } from '@/components/common/PageHeader';
@@ -16,14 +16,17 @@ export default function SubmitDataPage() {
   const upload = useUploadGeneration();
   const toast = useToast();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ date: '', time: '', generation_kwh: '', meter_reading_kwh: '', operating_hours: '' });
+  const [searchParams] = useSearchParams();
+  const initialDate = searchParams.get('date') || '';
+  
+  const [form, setForm] = useState({ date: initialDate, time: '', generation_kwh: '', meter_reading_kwh: '', operating_hours: '' });
   const [file, setFile] = useState<File | null>(null);
 
   const onManual = async (e: FormEvent) => {
     e.preventDefault();
     try {
       const r = await submit.mutateAsync({ plantId, rows: [{ date: form.date, hour: form.time ? Number(form.time.split(':')[0]) : null, generation_kwh: Number(form.generation_kwh), meter_reading_kwh: form.meter_reading_kwh ? Number(form.meter_reading_kwh) : null, operating_hours: form.operating_hours ? Number(form.operating_hours) : null }] });
-      toast.success('Generation data recorded', `${r.rows} row(s) for ${r.first_date}`);
+      toast.success('Generation data recorded', `${r.rows} row(s) for ${r.first_date}. Data is pending approval by the Issuing Officer.`);
       navigate(ROUTES.generator.generation);
     } catch (err) { toast.error('Submission failed', (err as ApiError).message + ((err as ApiError).details ? ` — ${(err as ApiError).details!.join(' ')}` : '')); }
   };
