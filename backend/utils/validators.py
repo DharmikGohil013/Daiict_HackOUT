@@ -96,3 +96,55 @@ def validate_register_input(data: Dict[str, Any]) -> List[str]:
     if role not in ("regulator", "issuer", "buyer", "auditor"):
         errors.append("role must be one of regulator, issuer, buyer, auditor.")
     return errors
+
+
+def validate_claim_input(data: Dict[str, Any]) -> List[str]:
+    errors: List[str] = []
+    if not isinstance(data, dict):
+        return ["Request body must be a JSON object or multipart form."]
+    for field in ("plant_id", "cert_id", "period_start", "period_end"):
+        if not str(data.get(field) or "").strip():
+            errors.append(f"{field} is required.")
+    for field in ("period_start", "period_end"):
+        if data.get(field) and not is_valid_date(data[field]):
+            errors.append(f"{field} must be YYYY-MM-DD.")
+    if (
+        data.get("period_start")
+        and data.get("period_end")
+        and is_valid_date(data["period_start"])
+        and is_valid_date(data["period_end"])
+    ):
+        if str(data["period_end"]) < str(data["period_start"]):
+            errors.append("period_end must not be before period_start.")
+    try:
+        if float(data.get("claimed_kwh")) <= 0:
+            errors.append("claimed_kwh must be positive.")
+    except (TypeError, ValueError):
+        errors.append("claimed_kwh is required and must be numeric.")
+    cert_id = str(data.get("cert_id") or "")
+    if cert_id and not CERT_ID_RE.match(cert_id):
+        errors.append("cert_id must be uppercase alphanumeric with hyphens, e.g. REC-1022.")
+    return errors
+
+
+def validate_generation_rows(rows: Any) -> List[str]:
+    errors: List[str] = []
+    if not isinstance(rows, list) or not rows:
+        return ["rows must be a non-empty list."]
+    for i, r in enumerate(rows[:5000]):
+        if not isinstance(r, dict) or not is_valid_date(r.get("date")):
+            errors.append(f"row {i}: date must be YYYY-MM-DD.")
+            continue
+        try:
+            if float(r.get("generation_kwh")) < 0:
+                errors.append(f"row {i}: generation_kwh must be >= 0.")
+        except (TypeError, ValueError):
+            errors.append(f"row {i}: generation_kwh must be numeric.")
+        if r.get("hour") not in (None, "") and not (
+            str(r["hour"]).lstrip("-").isdigit() and -1 <= int(r["hour"]) <= 23
+        ):
+            errors.append(f"row {i}: hour must be 0-23.")
+        if len(errors) > 20:
+            errors.append("… more errors truncated.")
+            break
+    return errors

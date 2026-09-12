@@ -47,22 +47,42 @@ def create_app(test_config: dict = None):
 
     # ── Blueprints ────────────────────────────────────────────
     from routes.admin_routes import admin_bp
+    from routes.audit_routes import audit_bp
     from routes.auth_routes import auth_bp
+    from routes.certificate_routes import certificates_bp
+    from routes.claim_routes import claims_bp
+    from routes.dashboard_routes import dashboard_bp
+    from routes.fraud_routes import fraud_bp
+    from routes.generation_routes import generation_bp
+    from routes.investigation_routes import investigations_bp
     from routes.issue_routes import issue_bp
     from routes.ledger_routes import ledger_bp
+    from routes.prediction_routes import prediction_bp
+    from routes.registry_routes import registry_bp
     from routes.verify_routes import verify_bp
 
+    # REC Guard (Module 1 / Module 2)
     app.register_blueprint(issue_bp, url_prefix="/api")
     app.register_blueprint(verify_bp, url_prefix="/api")
     app.register_blueprint(ledger_bp, url_prefix="/api")
     app.register_blueprint(admin_bp, url_prefix="/api/admin")
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
+    # GreenShield
+    app.register_blueprint(registry_bp, url_prefix="/api")
+    app.register_blueprint(generation_bp, url_prefix="/api")
+    app.register_blueprint(prediction_bp, url_prefix="/api")
+    app.register_blueprint(claims_bp, url_prefix="/api")
+    app.register_blueprint(certificates_bp, url_prefix="/api")
+    app.register_blueprint(fraud_bp, url_prefix="/api")
+    app.register_blueprint(investigations_bp, url_prefix="/api")
+    app.register_blueprint(audit_bp, url_prefix="/api")
+    app.register_blueprint(dashboard_bp, url_prefix="/api")
 
     # ── Health Check ──────────────────────────────────────────
     @app.route("/health")
     @app.route("/api/health")
     def health():
-        return jsonify({"status": "ok", "service": APP_NAME, "version": APP_VERSION})
+        return jsonify({"status": "ok", "service": APP_NAME, "version": APP_VERSION, "product": "GreenShield"})
 
     # ── Error Handlers ────────────────────────────────────────
     @app.errorhandler(400)

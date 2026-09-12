@@ -131,3 +131,8 @@ def risk_weights() -> dict:
 def auto_verify_max_level() -> str:
     """Highest risk level that is auto-verified without government review (LOW or MEDIUM)."""
     return os.getenv("AUTO_VERIFY_MAX_LEVEL", "MEDIUM").upper()
+
+
+def uploads_path() -> str:
+    """Claim certificate uploads are kept (unlike verify temp files) as investigation evidence."""
+    return resolve_path(os.getenv("UPLOADS_PATH", "storage/uploads/"))
