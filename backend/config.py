@@ -99,3 +99,35 @@ def flask_port() -> int:
 
 def flask_debug() -> bool:
     return env_bool("FLASK_DEBUG", False)
+
+
+# ── GreenShield: generation model + risk engine ────────────────
+
+
+def generation_model_path() -> str:
+    return resolve_path(os.getenv("GENERATION_MODEL_PATH", "models/generation_rf.pkl"))
+
+
+def risk_thresholds() -> dict:
+    """Upper bounds of LOW / MEDIUM / HIGH; anything above HIGH is CRITICAL. Env: RISK_THRESHOLDS=30,60,80"""
+    raw = os.getenv("RISK_THRESHOLDS", "30,60,80")
+    try:
+        low, medium, high = [int(x) for x in raw.split(",")]
+    except ValueError:
+        low, medium, high = 30, 60, 80
+    return {"LOW": low, "MEDIUM": medium, "HIGH": high}
+
+
+def risk_weights() -> dict:
+    """Maximum points per risk component (must sum to 100). Env: RISK_WEIGHTS=40,20,20,10,10"""
+    raw = os.getenv("RISK_WEIGHTS", "40,20,20,10,10")
+    try:
+        g, h, w, c, cap = [int(x) for x in raw.split(",")]
+    except ValueError:
+        g, h, w, c, cap = 40, 20, 20, 10, 10
+    return {"generation": g, "historical": h, "weather": w, "certificate": c, "capacity": cap}
+
+
+def auto_verify_max_level() -> str:
+    """Highest risk level that is auto-verified without government review (LOW or MEDIUM)."""
+    return os.getenv("AUTO_VERIFY_MAX_LEVEL", "MEDIUM").upper()
