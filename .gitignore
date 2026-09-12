@@ -22,6 +22,8 @@ backend/storage/ledger.db
 backend/storage/ledger.db-*
 backend/storage/certificates/*
 backend/storage/temp/*
+backend/storage/uploads/*
+!backend/storage/uploads/.gitkeep
 !backend/storage/certificates/.gitkeep
 !backend/storage/temp/.gitkeep
 backend/models/*.pkl
