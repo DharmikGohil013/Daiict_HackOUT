@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { usePlants } from '@/lib/queries';
+import { usePlants, useEnums } from '@/lib/queries';
 import { PageHeader } from '@/components/common/PageHeader';
 import { DataTable, type Column } from '@/components/common/DataTable';
 import { FilterBar, Select } from '@/components/common/FilterBar';
@@ -16,6 +16,7 @@ export default function PlantsPage() {
   const [search, setSearch] = useState('');
   const [energy, setEnergy] = useState('');
   const q = usePlants({ search: search || undefined, energy_type: energy || undefined });
+  const enums = useEnums();
   const navigate = useNavigate();
   const cols: Column<PlantWithStats>[] = [
     { key: 'plant_id', header: 'Plant ID', render: (p) => <span className="font-mono font-semibold">{p.plant_id}</span>, sortValue: (p) => p.plant_id },
@@ -34,7 +35,7 @@ export default function PlantsPage() {
       <PageHeader eyebrow="Government portal" title="Plant registry" subtitle="Registered renewable generators with metered output, claim activity and risk." />
       <FilterBar>
         <SearchInput className="w-72" value={search} onChange={setSearch} placeholder="Search plant, location…" />
-        <Select id="p-energy" label="Energy type" value={energy} onChange={setEnergy} allLabel="All" options={['Solar', 'Wind', 'Hydro', 'Biomass', 'Other'].map((v) => ({ value: v, label: v }))} />
+        <Select id="p-energy" label="Energy type" value={energy} onChange={setEnergy} allLabel="All" options={(enums.data?.energy_types ?? []).map((v) => ({ value: v, label: v }))} />
       </FilterBar>
       {q.isError ? <ErrorState error={q.error} retry={() => q.refetch()} /> : <DataTable columns={cols} rows={q.data?.plants ?? []} rowKey={(p) => p.plant_id} loading={q.isLoading} onRowClick={(p) => navigate(ROUTES.government.plant(p.plant_id))} initialSort={{ key: 'risk', dir: 'desc' }} />}
     </>

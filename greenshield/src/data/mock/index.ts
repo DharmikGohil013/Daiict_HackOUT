@@ -334,6 +334,7 @@ export function route(method: string, path: string, body?: unknown): unknown {
   if (p === '/settings/risk' && m === 'GET') return riskSettings;
   if (p === '/settings/risk' && m === 'PUT') return { ...riskSettings, ...(body as object), updated_by: 'gov@greenshield.gov', updated_at: T0 };
   if (p === '/settings/risk/reset') return riskSettings;
+  if (p === '/config/enums') return { success: true, energy_types: ['Solar', 'Wind', 'Hydro', 'Biomass', 'Geothermal', 'Tidal', 'Other'], risk_levels: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'], claim_statuses: ['submitted', 'verifying', 'verified', 'flagged', 'evidence_requested', 'approved', 'rejected'], certificate_statuses: ['VALID', 'NOT_PROVIDED', 'NOT_FOUND', 'DUPLICATE', 'TAMPERED', 'ID_TAMPERED', 'REVOKED'], ledger_statuses: ['issued', 'claimed', 'revoked'], roles: ['government', 'generator', 'institution', 'issuer'], output_formats: ['pdf', 'png'], fraud_types: ['none', 'inflated_generation', 'tampered_certificate', 'certificate_id_tampering', 'duplicate_claim', 'unregistered_certificate', 'revoked_certificate'], plant_statuses: ['active', 'under_review', 'suspended'], investigation_statuses: ['open', 'awaiting_evidence', 'resolved_approved', 'resolved_rejected'] };
   if (p === '/ml/model') return { model: { version: 'rf-v3-per-type', algorithm: 'RandomForestRegressor (one forest per energy type)', metrics: { r2: 0.9956, mape_pct: 3.5 } } };
   throw new Error(`Mock API has no handler for ${m} ${p}`);
 }

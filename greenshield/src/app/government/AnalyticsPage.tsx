@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAnalytics } from '@/lib/queries';
+import { useAnalytics, useEnums } from '@/lib/queries';
 import { PageHeader } from '@/components/common/PageHeader';
 import { KpiCard } from '@/components/common/KpiCard';
 import { FilterBar, Select } from '@/components/common/FilterBar';
@@ -17,13 +17,14 @@ import { fmtEnergy, fmtNumber } from '@/lib/format';
 export default function AnalyticsPage() {
   const [f, setF] = useState<{ date_from?: string; date_to?: string; energy_type?: string; state?: string }>({});
   const q = useAnalytics(f);
+  const enums = useEnums();
   return (
     <>
       <PageHeader eyebrow="Government portal" title="Analytics" subtitle="Generation, claims, verification outcomes and fraud signals over time." />
       <FilterBar>
         <label className="flex flex-col gap-1 text-xs"><span className="label">From</span><input type="date" className="field py-1.5 text-sm" value={f.date_from ?? ''} onChange={(e) => setF({ ...f, date_from: e.target.value || undefined })} /></label>
         <label className="flex flex-col gap-1 text-xs"><span className="label">To</span><input type="date" className="field py-1.5 text-sm" value={f.date_to ?? ''} onChange={(e) => setF({ ...f, date_to: e.target.value || undefined })} /></label>
-        <Select id="a-energy" label="Energy type" value={f.energy_type ?? ''} onChange={(v) => setF({ ...f, energy_type: v || undefined })} allLabel="All" options={['Solar', 'Wind', 'Hydro', 'Biomass'].map((v) => ({ value: v, label: v }))} />
+        <Select id="a-energy" label="Energy type" value={f.energy_type ?? ''} onChange={(v) => setF({ ...f, energy_type: v || undefined })} allLabel="All" options={(enums.data?.energy_types ?? []).map((v) => ({ value: v, label: v }))} />
         <Select id="a-state" label="State" value={f.state ?? ''} onChange={(v) => setF({ ...f, state: v || undefined })} allLabel="All" options={(q.data?.states ?? []).map((s) => ({ value: s, label: s }))} />
       </FilterBar>
       {q.isLoading ? <LoadingState /> : q.isError || !q.data ? <ErrorState error={q.error} retry={() => q.refetch()} /> : (

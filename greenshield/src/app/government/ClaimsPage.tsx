@@ -1,26 +1,22 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { useClaims } from '@/lib/queries';
+import { useClaims, useEnums } from '@/lib/queries';
 import { PageHeader } from '@/components/common/PageHeader';
 import { DataTable, type Column } from '@/components/common/DataTable';
 import { FilterBar, Select } from '@/components/common/FilterBar';
 import { SearchInput } from '@/components/common/SearchInput';
 import { RiskBadge } from '@/components/common/RiskBadge';
 import { StatusBadge } from '@/components/common/StatusBadge';
-import { ErrorState } from '@/components/common/States';
+import { ErrorState, LoadingState } from '@/components/common/States';
 import { fmtDate, fmtEnergy } from '@/lib/format';
 import { ROUTES } from '@/lib/routes';
 import type { Claim } from '@/types';
-
-const ENERGY = ['Solar', 'Wind', 'Hydro', 'Biomass', 'Other'].map((v) => ({ value: v, label: v }));
-const RISK = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].map((v) => ({ value: v, label: v }));
-const STATUS = ['verified', 'approved', 'flagged', 'evidence_requested', 'rejected', 'verifying'].map((v) => ({ value: v, label: v.replace('_', ' ') }));
-const CERT = ['VALID', 'NOT_PROVIDED', 'NOT_FOUND', 'DUPLICATE', 'TAMPERED', 'ID_TAMPERED', 'REVOKED'].map((v) => ({ value: v, label: v.replace('_', ' ') }));
 
 export default function ClaimsPage() {
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
   const [search, setSearch] = useState(params.get('search') ?? '');
+  const enums = useEnums();
   const filters = useMemo(() => ({
     status: params.get('status') ?? undefined, risk_level: params.get('risk_level') ?? undefined, energy_type: params.get('energy_type') ?? undefined,
     certificate_status: params.get('certificate_status') ?? undefined, min_risk: params.get('min_risk') ? Number(params.get('min_risk')) : undefined,
@@ -48,10 +44,10 @@ export default function ClaimsPage() {
       <PageHeader eyebrow="Government portal" title="Claims" subtitle="Every submitted claim with its AI expectation, metered actual, certificate result and risk score." />
       <FilterBar>
         <SearchInput className="w-72" value={search} onChange={setSearch} placeholder="Search claim, certificate, generator, institution…" />
-        <Select id="f-status" label="Claim status" value={params.get('status') ?? ''} onChange={(v) => set('status', v)} options={STATUS} allLabel="All" />
-        <Select id="f-risk" label="Risk" value={params.get('risk_level') ?? ''} onChange={(v) => set('risk_level', v)} options={RISK} allLabel="All" />
-        <Select id="f-energy" label="Energy type" value={params.get('energy_type') ?? ''} onChange={(v) => set('energy_type', v)} options={ENERGY} allLabel="All" />
-        <Select id="f-cert" label="Certificate" value={params.get('certificate_status') ?? ''} onChange={(v) => set('certificate_status', v)} options={CERT} allLabel="All" />
+        <Select id="f-status" label="Claim status" value={params.get('status') ?? ''} onChange={(v) => set('status', v)} options={(enums.data?.claim_statuses ?? []).map((v) => ({ value: v, label: v.replace('_', ' ') }))} allLabel="All" />
+        <Select id="f-risk" label="Risk" value={params.get('risk_level') ?? ''} onChange={(v) => set('risk_level', v)} options={(enums.data?.risk_levels ?? []).map((v) => ({ value: v, label: v }))} allLabel="All" />
+        <Select id="f-energy" label="Energy type" value={params.get('energy_type') ?? ''} onChange={(v) => set('energy_type', v)} options={(enums.data?.energy_types ?? []).map((v) => ({ value: v, label: v }))} allLabel="All" />
+        <Select id="f-cert" label="Certificate" value={params.get('certificate_status') ?? ''} onChange={(v) => set('certificate_status', v)} options={(enums.data?.certificate_statuses ?? []).map((v) => ({ value: v, label: v.replace('_', ' ') }))} allLabel="All" />
         <label className="flex flex-col gap-1 text-xs"><span className="label">From</span><input type="date" className="field py-1.5 text-sm" value={params.get('date_from') ?? ''} onChange={(e) => set('date_from', e.target.value)} /></label>
         <label className="flex flex-col gap-1 text-xs"><span className="label">To</span><input type="date" className="field py-1.5 text-sm" value={params.get('date_to') ?? ''} onChange={(e) => set('date_to', e.target.value)} /></label>
         {[...params.keys()].length > 0 && <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setParams({}, { replace: true }); setSearch(''); }}>Clear filters</button>}
