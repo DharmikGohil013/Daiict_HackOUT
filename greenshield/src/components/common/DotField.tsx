@@ -86,8 +86,13 @@ export const DotField = memo(function DotField({
   useEffect(() => {
     const canvas = canvasRef.current;
     const glowEl = glowRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d', { alpha: true });
+    if (!canvas || typeof canvas.getContext !== 'function') return;
+    let ctx: CanvasRenderingContext2D | null = null;
+    try {
+      ctx = canvas.getContext('2d', { alpha: true });
+    } catch {
+      return;
+    }
     if (!ctx) return;
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -143,9 +148,10 @@ export const DotField = memo(function DotField({
     }
 
     function onMouseMove(e: MouseEvent) {
-      const s = sizeRef.current;
-      mouseRef.current.x = e.pageX - s.offsetX;
-      mouseRef.current.y = e.pageY - s.offsetY;
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      mouseRef.current.x = e.clientX - rect.left;
+      mouseRef.current.y = e.clientY - rect.top;
     }
 
     function onScroll() {
