@@ -7,7 +7,7 @@ import { FilterBar, Select } from '@/components/common/FilterBar';
 import { SearchInput } from '@/components/common/SearchInput';
 import { RiskBadge } from '@/components/common/RiskBadge';
 import { StatusBadge } from '@/components/common/StatusBadge';
-import { ErrorState, LoadingState } from '@/components/common/States';
+import { ErrorState } from '@/components/common/States';
 import { fmtDate, fmtEnergy } from '@/lib/format';
 import { ROUTES } from '@/lib/routes';
 import type { Claim } from '@/types';
