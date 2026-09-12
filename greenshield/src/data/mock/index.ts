@@ -278,6 +278,11 @@ export const issueResult: IssueResult = {
   anomaly_flag: false, anomaly_reason: null, payload: { cert_id: 'REC-2031', generator_id: 'GEN-001', energy_kwh: 18_400, generation_date: '2026-09-11' },
 };
 
+export const riskSettings = {
+  thresholds: { LOW: 30, MEDIUM: 60, HIGH: 80 }, weights: { generation: 40, historical: 20, weather: 20, certificate: 10, capacity: 10 }, auto_verify_max_level: 'MEDIUM' as const,
+  updated_at: null, updated_by: null, model: { version: 'rf-v3-per-type', trained_at: T0, metrics: { r2: 0.9956, mape_pct: 3.5 } },
+};
+
 export const sessions: Record<string, Session> = {
   government: { access_token: 'mock-gov', expires_in: 3600, user: { email: 'gov@greenshield.gov', role: 'government', organisation: 'Ministry of New & Renewable Energy', entity_id: null, display_name: 'Verification Officer' } },
   generator: { access_token: 'mock-gen', expires_in: 3600, user: { email: 'ops@gen-001.in', role: 'generator', organisation: 'Kutch Solar Park A', entity_id: 'GEN-001', display_name: 'Plant Operations, GEN-001' } },
@@ -326,6 +331,9 @@ export function route(method: string, path: string, body?: unknown): unknown {
   if (p === '/prediction/generation') return { prediction: { plant_id: 'GEN-001', period_start: '2026-08-01', period_end: '2026-08-31', days: 31, expected_kwh: 620_000, lower_bound_kwh: 590_000, upper_bound_kwh: 651_000, historical_expected_kwh: 600_000, capacity_max_kwh: 3_720_000, weather_avg: { temperature_c: 30, humidity_pct: 72, cloud_cover_pct: 60, solar_irradiance_kwh_m2: 3.4, wind_speed_ms: 5 }, model_version: 'rf-v3-per-type', daily: [], actual_kwh: 605_000 } };
   if (p === '/rec/issue') return issueResult;
   if (p === '/rec/verify') return verifyValid;
+  if (p === '/settings/risk' && m === 'GET') return riskSettings;
+  if (p === '/settings/risk' && m === 'PUT') return { ...riskSettings, ...(body as object), updated_by: 'gov@greenshield.gov', updated_at: T0 };
+  if (p === '/settings/risk/reset') return riskSettings;
   if (p === '/ml/model') return { model: { version: 'rf-v3-per-type', algorithm: 'RandomForestRegressor (one forest per energy type)', metrics: { r2: 0.9956, mape_pct: 3.5 } } };
   throw new Error(`Mock API has no handler for ${m} ${p}`);
 }

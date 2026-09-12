@@ -2,13 +2,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   analyticsApi, auditApi, certificatesApi, claimsApi, dashboardsApi, fraudApi, generationApi, institutionsApi, investigationsApi, issuerApi,
-  plantsApi, predictionApi, verifierApi,
+  plantsApi, predictionApi, settingsApi, verifierApi,
 } from '@/services';
 import type { ClaimFilters, SubmitClaimInput } from '@/services/api/claims';
 import type { AnalyticsFilters } from '@/services/api/analytics';
 import type { GenerationInputRow } from '@/services/api/generation';
 import type { IssueRecInput } from '@/services/certificate/issuer';
 import type { Decision } from '@/types';
+import type { RiskSettings } from '@/services/api/settings';
 
 export const keys = {
   govDashboard: ['dashboard', 'government'] as const,
@@ -32,6 +33,7 @@ export const keys = {
   generation: (id: string, f: object) => ['generation', id, f] as const,
   forecast: (id: string) => ['forecast', id] as const,
   model: ['ml', 'model'] as const,
+  riskSettings: ['settings', 'risk'] as const,
 };
 
 export const useGovernmentDashboard = () => useQuery({ queryKey: keys.govDashboard, queryFn: dashboardsApi.government, refetchInterval: 60_000 });
@@ -103,3 +105,16 @@ export function useUploadGeneration() {
 
 export const useIssueRec = () => useMutation({ mutationFn: (input: IssueRecInput) => issuerApi.issue(input) });
 export const useVerifyRec = () => useMutation({ mutationFn: (file: File) => verifierApi.verifyFile(file) });
+
+export const useRiskSettings = () => useQuery({ queryKey: keys.riskSettings, queryFn: settingsApi.get });
+export function useUpdateRiskSettings() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: Pick<RiskSettings, 'thresholds' | 'weights' | 'auto_verify_max_level'>) => settingsApi.update(body),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: keys.riskSettings }); qc.invalidateQueries({ queryKey: ['audit'] }); },
+  });
+}
+export function useResetRiskSettings() {
+  const qc = useQueryClient();
+  return useMutation({ mutationFn: () => settingsApi.reset(), onSuccess: () => qc.invalidateQueries({ queryKey: keys.riskSettings }) });
+}

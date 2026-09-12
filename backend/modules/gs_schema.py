@@ -204,6 +204,16 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     entry_hash       TEXT NOT NULL
 );
 
+-- ============================================================
+-- Runtime settings (risk thresholds / weights) editable by government
+-- ============================================================
+CREATE TABLE IF NOT EXISTS app_settings (
+    key         TEXT PRIMARY KEY,
+    value       TEXT NOT NULL,
+    updated_at  TEXT NOT NULL,
+    updated_by  TEXT
+);
+
 CREATE INDEX IF NOT EXISTS idx_gen_plant_date ON generation_data(plant_id, date);
 CREATE INDEX IF NOT EXISTS idx_weather_plant_date ON weather_data(plant_id, date);
 CREATE INDEX IF NOT EXISTS idx_pred_plant ON predictions(plant_id, target_date);

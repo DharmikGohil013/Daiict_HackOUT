@@ -13,3 +13,4 @@ export { verifierApi } from './certificate/verifier';
 export { issuerApi } from './certificate/issuer';
 export { certificatesApi } from './ledger/certificates';
 export { API_BASE, MOCK_API, fileUrl } from './api/client';
+export { settingsApi } from './api/settings';

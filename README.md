@@ -77,6 +77,32 @@ and `VITE_API_URL=http://localhost:5001` in `frontend/.env` if so.
 
 `make setup`, `make backend`, `make frontend`, `make test`, `make seed` wrap the same steps.
 
+## GreenShield — AI-Powered Renewable Energy Verification & REC Fraud Intelligence
+
+Built on top of REC Guard from the spec in `FinalMD.md`. Three portals (government, generator,
+institution) plus REC issuer and public verifier; every claim is checked against an AI
+generation expectation, the metered actual, and the certificate's cryptography and ledger state,
+then scored 0–100 with a transparent explanation.
+
+```bash
+cd backend && python scripts/seed_greenshield.py --reset   # 12 plants, 31 claims, 4 fraud cases, demo users
+FLASK_PORT=5001 python app.py
+cd greenshield && npm install && npm run dev                # http://localhost:5174
+cd backend && python scripts/demo_journeys.py               # runs the 4 demo journeys end to end
+```
+
+Demo logins (password `Demo@1234`): `gov@greenshield.gov` · `ops@gen-001.in` · `claims@inst-045.org` · `issuer@greenshield.gov` — or the one-click demo buttons on `/login`.
+
+| Portal | Start here |
+|---|---|
+| Government | `/government/dashboard` → open `CLM-0001` (CRITICAL) → investigation `INV-0001` |
+| Verifier | `/verifier` with `backend/storage/certificates/REC-002_TAMPERED.png` or `REC-999_IDTAMPERED.png` |
+| Generator | `/generator/dashboard` (GEN-001) — today vs AI expected, forecast, data upload |
+| Institution | `/institution/claims/new` — submit a claim and watch the verification timeline |
+
+Architecture, engines, data model and API: [`docs/GREENSHIELD.md`](docs/GREENSHIELD.md).
+Docker: `docker compose up --build` serves GreenShield on :3001 alongside REC Guard on :3000.
+
 ## Docker
 
 ```bash

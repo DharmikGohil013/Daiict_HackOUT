@@ -59,6 +59,7 @@ def create_app(test_config: dict = None):
     from routes.ledger_routes import ledger_bp
     from routes.prediction_routes import prediction_bp
     from routes.registry_routes import registry_bp
+    from routes.settings_routes import settings_bp
     from routes.verify_routes import verify_bp
 
     # REC Guard (Module 1 / Module 2)
@@ -77,6 +78,7 @@ def create_app(test_config: dict = None):
     app.register_blueprint(investigations_bp, url_prefix="/api")
     app.register_blueprint(audit_bp, url_prefix="/api")
     app.register_blueprint(dashboard_bp, url_prefix="/api")
+    app.register_blueprint(settings_bp, url_prefix="/api")
 
     # ── Health Check ──────────────────────────────────────────
     @app.route("/health")
@@ -115,6 +117,11 @@ def create_app(test_config: dict = None):
 
     with app.app_context():
         init_db()
+        from modules.settings import load_persisted
+
+        applied = load_persisted()
+        if applied:
+            log.info("risk_settings_loaded", keys=applied)
         admin_email = os.getenv("ADMIN_EMAIL")
         admin_password = os.getenv("ADMIN_PASSWORD")
         if admin_email and admin_password and not get_user_by_email(admin_email):
