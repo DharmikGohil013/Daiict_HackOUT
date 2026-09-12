@@ -138,4 +138,4 @@ Phase 2: multi-tenant issuer keys, PostgreSQL, S3 storage, rate limiting, key ro
 Phase 3: Hyperledger Fabric ledger, public verification API, SCADA/smart-meter feeds,
 mobile QR verification, I-REC / REGO format support.
 
-Full specification: `REC_GUARD_BLUEPRINT.md`.
+Full specification: `REC_GUARD_BLUEPRINT.md`. Architecture and implementation report with diagrams: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
