@@ -33,3 +33,13 @@
   .kv dt { @apply text-ink-3 text-xs; }
   .kv dd { @apply font-medium num; }
 }
+
+@keyframes top-indeterminate {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(30%); }
+  100% { transform: translateX(200%); }
+}
+.animate-top-indeterminate {
+  width: 50%;
+  animation: top-indeterminate 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}

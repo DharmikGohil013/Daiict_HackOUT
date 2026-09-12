@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { CheckCircle2, Download, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, Download, ShieldCheck, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/lib/routes';
 import { useIssueRec, usePlants } from '@/lib/queries';
@@ -38,7 +38,11 @@ export default function CreateRecPage() {
             <Field id="r-period" label="Generation period" hint="e.g. 2026-08 or 2026-08-01..2026-08-31"><input id="r-period" className="field" value={f.generation_period} onChange={(e) => setF({ ...f, generation_period: e.target.value })} /></Field>
             <Field id="r-type" label="Energy type"><select id="r-type" className="field" value={f.energy_type} onChange={(e) => setF({ ...f, energy_type: e.target.value })}>{['Solar', 'Wind', 'Hydro', 'Biomass', 'Geothermal', 'Tidal', 'Other'].map((t) => <option key={t}>{t}</option>)}</select></Field>
             <Field id="r-format" label="File format"><select id="r-format" className="field" value={f.format} onChange={(e) => setF({ ...f, format: e.target.value as 'png' | 'pdf' })}><option value="png">PNG</option><option value="pdf">PDF</option></select></Field>
-            <div className="flex items-end"><button className="btn btn-primary w-full" type="submit" disabled={issue.isPending}>{issue.isPending ? 'Issuing…' : 'Issue REC'}</button></div>
+            <div className="flex items-end">
+              <button className="btn btn-primary w-full" type="submit" disabled={issue.isPending}>
+                {issue.isPending ? <><Loader2 size={16} className="animate-spin" /><span>Signing &amp; issuing…</span></> : 'Issue REC'}
+              </button>
+            </div>
           </form>
         </Panel>
         <Panel title={r ? `${r.cert_id} — Successfully Issued` : 'Issuance pipeline'} subtitle={r ? r.issued_at : 'Each step runs server-side with the real keys and ledger.'} actions={r && <a className="btn btn-secondary btn-sm" href={fileUrl(r.download_url)} download><Download size={14} /> Download</a>}>

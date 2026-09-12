@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Loader2 } from 'lucide-react';
 import { Modal } from './Modal';
 import { cn } from '@/lib/cn';
 
@@ -9,7 +10,9 @@ export function ConfirmDialog({ open, onClose, onConfirm, title, message, confir
   return (
     <Modal open={open} onClose={onClose} title={title} footer={<>
       <button type="button" className="btn btn-secondary" onClick={onClose} disabled={busy}>Cancel</button>
-      <button type="button" className={cn('btn', tone === 'danger' ? 'btn-danger' : 'btn-primary')} onClick={() => onConfirm(note.trim() || undefined)} disabled={busy}>{busy ? 'Working…' : confirmLabel}</button>
+      <button type="button" className={cn('btn', tone === 'danger' ? 'btn-danger' : 'btn-primary')} onClick={() => onConfirm(note.trim() || undefined)} disabled={busy}>
+        {busy ? <><Loader2 size={14} className="animate-spin" /><span>Processing…</span></> : confirmLabel}
+      </button>
     </>}>
       <p className="text-sm text-ink-2">{message}</p>
       {withNote && (

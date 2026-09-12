@@ -46,18 +46,46 @@ export function writeToken(token: string | null): void {
   }
 }
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const MIN_VISUAL_DELAY_MS = 360;
+
 async function mockRequest<T>(config: AxiosRequestConfig): Promise<T> {
   const { route } = await import('@/data/mock');
-  await new Promise((r) => setTimeout(r, 180));
+  if (import.meta.env.MODE !== 'test') {
+    await sleep(200);
+  }
   const body = config.data instanceof FormData ? Object.fromEntries(config.data.entries()) : config.data;
   const url = (config.url || '') + (config.params ? `?${new URLSearchParams(config.params as Record<string, string>).toString()}` : '');
   return { success: true, ...(route(config.method || 'get', url, body) as object) } as T;
 }
 
 export async function request<T>(config: AxiosRequestConfig): Promise<T> {
-  if (MOCK_API) return mockRequest<T>(config);
-  const res = await http.request<T>(config);
-  return res.data;
+  const isTest = import.meta.env.MODE === 'test';
+  const start = Date.now();
+
+  if (MOCK_API) {
+    const res = await mockRequest<T>(config);
+    if (!isTest) {
+      const elapsed = Date.now() - start;
+      if (elapsed < MIN_VISUAL_DELAY_MS) await sleep(MIN_VISUAL_DELAY_MS - elapsed);
+    }
+    return res;
+  }
+
+  try {
+    const res = await http.request<T>(config);
+    if (!isTest) {
+      const elapsed = Date.now() - start;
+      if (elapsed < MIN_VISUAL_DELAY_MS) await sleep(MIN_VISUAL_DELAY_MS - elapsed);
+    }
+    return res.data;
+  } catch (err) {
+    if (!isTest) {
+      const elapsed = Date.now() - start;
+      if (elapsed < MIN_VISUAL_DELAY_MS) await sleep(MIN_VISUAL_DELAY_MS - elapsed);
+    }
+    throw err;
+  }
 }
 
 /** Absolute URL for backend-served files such as /api/certificate/<file>/preview. */

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { CheckCircle2, MinusCircle, ShieldCheck, ShieldX, XCircle, UploadCloud } from 'lucide-react';
+import { CheckCircle2, MinusCircle, ShieldCheck, ShieldX, XCircle, UploadCloud, Loader2 } from 'lucide-react';
 import { useVerifyRec } from '@/lib/queries';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Panel } from '@/components/common/Panel';
@@ -33,11 +33,27 @@ export default function VerifierPage() {
               {file ? <span className="font-semibold text-ink">{file.name}</span> : <span>Choose a PNG or PDF certificate</span>}
               <input type="file" className="sr-only" accept=".png,.pdf,image/png,application/pdf" onChange={(e) => setFile(e.target.files?.[0] ?? null)} aria-label="Certificate file" />
             </label>
-            <button className="btn btn-primary w-full" type="submit" disabled={!file || verify.isPending}>{verify.isPending ? 'Verifying…' : 'Verify certificate'}</button>
+            <button className="btn btn-primary w-full" type="submit" disabled={!file || verify.isPending}>
+              {verify.isPending ? <><Loader2 size={16} className="animate-spin" /><span>Verifying certificate…</span></> : 'Verify certificate'}
+            </button>
             <p className="text-xs text-ink-3">The file is analysed on the server and deleted afterwards; every attempt is written to the audit log.</p>
           </form>
         </Panel>
         <div className="space-y-4">
+          {verify.isPending && (
+            <div className="panel panel-pad border border-primary/30 bg-primary-soft/30 space-y-3" role="status">
+              <div className="flex items-center gap-3">
+                <Loader2 size={22} className="animate-spin text-primary" />
+                <div>
+                  <div className="font-semibold text-ink">Analyzing Certificate File…</div>
+                  <div className="text-xs text-ink-3">Extracting LSB steganography, checking RSA-2048 signature, and querying ledger</div>
+                </div>
+              </div>
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-2">
+                <div className="h-full bg-primary animate-top-indeterminate" />
+              </div>
+            </div>
+          )}
           {r && (
             <div className={cn('flex items-center gap-3 rounded-xl2 px-5 py-4', good ? 'bg-low-soft text-low' : 'bg-critical-soft text-critical')}>
               {good ? <ShieldCheck size={28} /> : <ShieldX size={28} />}

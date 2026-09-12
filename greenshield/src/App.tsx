@@ -5,6 +5,7 @@ import { AppShell } from '@/components/common/AppShell';
 import { ToastProvider } from '@/components/common/Toast';
 import { RequireAuth, RequireRole } from '@/components/common/ProtectedRoute';
 import { LoadingState } from '@/components/common/States';
+import { TopLoader } from '@/components/common/TopLoader';
 import { GEN_NAV, GOV_NAV, INST_NAV, ISSUER_NAV } from '@/lib/nav';
 import { ROUTES } from '@/lib/routes';
 import './styles/globals.css';
@@ -46,8 +47,10 @@ export const queryClient = new QueryClient({ defaultOptions: { queries: { retry:
 /** Route table without providers/router so tests can mount it inside a MemoryRouter. */
 export function AppRoutes() {
   return (
-    <Suspense fallback={<div className="p-8"><LoadingState label="Loading GreenShield…" /></div>}>
-      <Routes>
+    <>
+      <TopLoader />
+      <Suspense fallback={<div className="p-8"><LoadingState label="Loading GreenShield…" /></div>}>
+        <Routes>
         <Route path={ROUTES.landing} element={<LandingPage />} />
         <Route path={ROUTES.login} element={<LoginPage />} />
         <Route path={ROUTES.verifier} element={<AppShell nav={ISSUER_NAV} portal="verifier"><VerifierPage /></AppShell>} />
@@ -105,6 +108,7 @@ export function AppRoutes() {
         <Route path="*" element={<Navigate to={ROUTES.landing} replace />} />
       </Routes>
     </Suspense>
+    </>
   );
 }
 

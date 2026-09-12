@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { usePlants, useSubmitClaim } from '@/lib/queries';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Panel } from '@/components/common/Panel';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Loader2 } from 'lucide-react';
 import { Field } from '@/components/common/FilterBar';
 import { useToast } from '@/components/common/Toast';
 import { ROUTES } from '@/lib/routes';
@@ -40,7 +40,11 @@ export default function SubmitClaimPage() {
           <Field id="c-start" label="Generation period — start"><input id="c-start" type="date" className="field" required value={f.period_start} onChange={(e) => setF({ ...f, period_start: e.target.value })} /></Field>
           <Field id="c-end" label="Generation period — end"><input id="c-end" type="date" className="field" required value={f.period_end} onChange={(e) => setF({ ...f, period_end: e.target.value })} /></Field>
           <div className="sm:col-span-2"><Field id="c-file" label="Certificate upload (PNG or PDF)" hint="The hidden payload, hash, RSA signature and ledger record are verified server-side."><input id="c-file" type="file" accept=".png,.pdf,image/png,application/pdf" className="field" onChange={(e) => setFile(e.target.files?.[0] ?? null)} /></Field></div>
-          <div className="sm:col-span-2 flex justify-end"><button type="submit" className="btn btn-primary" disabled={submit.isPending}>{submit.isPending ? 'Verifying…' : 'Submit for Verification'}</button></div>
+          <div className="sm:col-span-2 flex justify-end">
+            <button type="submit" className="btn btn-primary" disabled={submit.isPending}>
+              {submit.isPending ? <><Loader2 size={16} className="animate-spin" /><span>Verifying against AI &amp; ledger…</span></> : 'Submit for Verification'}
+            </button>
+          </div>
         </form>
       </Panel>
       <Panel title="What happens next" subtitle="Automatic, in seconds">

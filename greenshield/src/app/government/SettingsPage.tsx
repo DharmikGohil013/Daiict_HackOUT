@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { RotateCcw, Save } from 'lucide-react';
+import { RotateCcw, Save, Loader2 } from 'lucide-react';
 import { useModelInfo, useResetRiskSettings, useRiskSettings, useUpdateRiskSettings } from '@/lib/queries';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Panel } from '@/components/common/Panel';
@@ -87,8 +87,12 @@ export default function SettingsPage() {
               {weightSum !== 100 && <p className="mt-1 text-xs text-critical">Weights must sum to exactly 100.</p>}
             </div>
             <div className="flex flex-wrap gap-2 lg:col-span-2">
-              <button type="submit" className="btn btn-primary" disabled={!valid || update.isPending}><Save size={14} /> {update.isPending ? 'Saving…' : 'Save configuration'}</button>
-              <button type="button" className="btn btn-secondary" onClick={doReset} disabled={reset.isPending}><RotateCcw size={14} /> Reset to defaults</button>
+              <button type="submit" className="btn btn-primary" disabled={!valid || update.isPending}>
+                {update.isPending ? <><Loader2 size={14} className="animate-spin" /><span>Saving…</span></> : <><Save size={14} /><span>Save configuration</span></>}
+              </button>
+              <button type="button" className="btn btn-secondary" onClick={doReset} disabled={reset.isPending}>
+                {reset.isPending ? <><Loader2 size={14} className="animate-spin" /><span>Resetting…</span></> : <><RotateCcw size={14} /><span>Reset to defaults</span></>}
+              </button>
               <span className="self-center text-xs text-ink-3">Changes apply to every new claim score; existing scores are not recomputed.</span>
             </div>
           </form>

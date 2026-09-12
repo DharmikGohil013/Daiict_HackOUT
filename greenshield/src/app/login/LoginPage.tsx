@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck, Loader2 } from 'lucide-react';
 import { authApi } from '@/services';
 import { useAuth } from '@/lib/auth';
 import { homeForRole, ROUTES } from '@/lib/routes';
@@ -59,14 +59,24 @@ export default function LoginPage() {
           <Field id="password" label="Password"><input id="password" className="field" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required /></Field>
           <Field id="role" label="Role"><select id="role" className="field" value={role} onChange={(e) => setRole(e.target.value as LoginRole)}>{ROLES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}</select></Field>
           {error && <p role="alert" className="rounded-lg bg-critical-soft px-3 py-2 text-sm text-critical">{error}</p>}
-          <button type="submit" className="btn btn-primary w-full" disabled={busy !== null}>{busy === 'login' ? 'Signing in…' : 'Sign In'}</button>
+          <button type="submit" className="btn btn-primary w-full" disabled={busy !== null}>
+            {busy === 'login' ? <><Loader2 size={16} className="animate-spin" /><span>Signing in…</span></> : 'Sign In'}
+          </button>
           <div className="relative py-1 text-center text-[11px] uppercase tracking-wider text-ink-3"><span className="bg-surface px-2">or explore with demo accounts</span><span className="absolute inset-x-0 top-1/2 -z-10 border-t border-line" /></div>
           <div className="grid gap-2 sm:grid-cols-3">
-            <button type="button" className="btn btn-secondary" onClick={() => demo('government')} disabled={busy !== null}>{busy === 'government' ? '…' : 'Demo Government'}</button>
-            <button type="button" className="btn btn-secondary" onClick={() => demo('generator')} disabled={busy !== null}>{busy === 'generator' ? '…' : 'Demo Generator'}</button>
-            <button type="button" className="btn btn-secondary" onClick={() => demo('institution')} disabled={busy !== null}>{busy === 'institution' ? '…' : 'Demo Institution'}</button>
+            <button type="button" className="btn btn-secondary" onClick={() => demo('government')} disabled={busy !== null}>
+              {busy === 'government' ? <><Loader2 size={14} className="animate-spin text-primary" /><span>…</span></> : 'Demo Government'}
+            </button>
+            <button type="button" className="btn btn-secondary" onClick={() => demo('generator')} disabled={busy !== null}>
+              {busy === 'generator' ? <><Loader2 size={14} className="animate-spin text-primary" /><span>…</span></> : 'Demo Generator'}
+            </button>
+            <button type="button" className="btn btn-secondary" onClick={() => demo('institution')} disabled={busy !== null}>
+              {busy === 'institution' ? <><Loader2 size={14} className="animate-spin text-primary" /><span>…</span></> : 'Demo Institution'}
+            </button>
           </div>
-          <button type="button" className="btn btn-ghost w-full text-xs" onClick={() => demo('issuer')} disabled={busy !== null}>Demo REC Issuer</button>
+          <button type="button" className="btn btn-ghost w-full text-xs" onClick={() => demo('issuer')} disabled={busy !== null}>
+            {busy === 'issuer' ? <><Loader2 size={14} className="animate-spin text-primary" /><span>Loading…</span></> : 'Demo REC Issuer'}
+          </button>
           <p className="text-center text-xs text-ink-3">Public certificate verification needs no account — <Link to={ROUTES.verifier}>open the REC verifier</Link>.</p>
         </form>
       </div>

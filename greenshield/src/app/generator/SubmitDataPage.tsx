@@ -4,6 +4,7 @@ import { useSubmitGeneration, useUploadGeneration } from '@/lib/queries';
 import { useAuth } from '@/lib/auth';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Panel } from '@/components/common/Panel';
+import { Loader2 } from 'lucide-react';
 import { Field } from '@/components/common/FilterBar';
 import { useToast } from '@/components/common/Toast';
 import { ROUTES } from '@/lib/routes';
@@ -46,13 +47,19 @@ export default function SubmitDataPage() {
             <Field id="g-gen" label="Generation (kWh)"><input id="g-gen" type="number" min="0" step="0.1" className="field" required value={form.generation_kwh} onChange={(e) => setForm({ ...form, generation_kwh: e.target.value })} /></Field>
             <Field id="g-meter" label="Meter reading (kWh)"><input id="g-meter" type="number" min="0" step="0.1" className="field" value={form.meter_reading_kwh} onChange={(e) => setForm({ ...form, meter_reading_kwh: e.target.value })} /></Field>
             <Field id="g-hours" label="Operating hours"><input id="g-hours" type="number" min="0" max="24" step="0.1" className="field" value={form.operating_hours} onChange={(e) => setForm({ ...form, operating_hours: e.target.value })} /></Field>
-            <div className="flex items-end"><button className="btn btn-primary w-full" type="submit" disabled={submit.isPending}>{submit.isPending ? 'Saving…' : 'Save reading'}</button></div>
+            <div className="flex items-end">
+              <button className="btn btn-primary w-full" type="submit" disabled={submit.isPending}>
+                {submit.isPending ? <><Loader2 size={16} className="animate-spin" /><span>Saving…</span></> : 'Save reading'}
+              </button>
+            </div>
           </form>
         </Panel>
         <Panel title="CSV upload" subtitle="Columns: Date, Time, Generation, Meter Reading, Operating Hours">
           <form onSubmit={onUpload} className="space-y-3">
             <input id="g-file" type="file" accept=".csv,text/csv" className="field" onChange={(e) => setFile(e.target.files?.[0] ?? null)} aria-label="CSV file" />
-            <button className="btn btn-primary" type="submit" disabled={!file || upload.isPending}>{upload.isPending ? 'Uploading…' : 'Upload Generation Data'}</button>
+            <button className="btn btn-primary" type="submit" disabled={!file || upload.isPending}>
+              {upload.isPending ? <><Loader2 size={16} className="animate-spin" /><span>Uploading…</span></> : 'Upload Generation Data'}
+            </button>
           </form>
         </Panel>
       </div>
