@@ -133,6 +133,30 @@ def create_app(test_config: dict = None):
             create_user(admin_email, generate_password_hash(admin_password), role="admin", organisation="REC Guard")
             log.info("admin_user_seeded", email=admin_email)
 
+        # Auto-seed demo dataset & demo accounts if database is fresh
+        if not get_user_by_email("gov@greenshield.gov"):
+            try:
+                log.info("auto_seeding_greenshield_dataset")
+                from scripts import seed_greenshield
+                seed_greenshield.main()
+                log.info("auto_seeding_completed")
+            except Exception as exc:
+                log.error("auto_seed_failed", error=str(exc))
+                try:
+                    from scripts.seed_greenshield import DEMO_PASSWORD, USERS
+                    for email, role, org, entity, display in USERS:
+                        if not get_user_by_email(email):
+                            create_user(
+                                email,
+                                generate_password_hash(DEMO_PASSWORD),
+                                role=role,
+                                organisation=org,
+                                entity_id=entity,
+                                display_name=display,
+                            )
+                except Exception as inner_exc:
+                    log.error("fallback_user_seed_failed", error=str(inner_exc))
+
     log.info("app_created", version=APP_VERSION)
     return app
 

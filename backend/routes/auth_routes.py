@@ -104,6 +104,13 @@ def demo_login(role):
         return jsonify({"success": False, "error": "Unknown demo role."}), 404
     user = get_user_by_email(email)
     if not user:
+        try:
+            from scripts import seed_greenshield
+            seed_greenshield.main()
+            user = get_user_by_email(email)
+        except Exception:
+            pass
+    if not user:
         return (
             jsonify({"success": False, "error": "Demo data not seeded. Run: python scripts/seed_greenshield.py"}),
             503,
