@@ -8,7 +8,7 @@ gunicorn==21.2.0
 cryptography==41.0.7
 
 # Steganography / Image
-Pillow==10.1.0
+Pillow>=10.1.0,<11
 # stegano==0.11.2  -- dropped: requires Pillow<10 (conflicts with Pillow 10.1); LSB is implemented natively in modules/steg.py
 pdf2image==1.16.3
 PyPDF2==3.0.1

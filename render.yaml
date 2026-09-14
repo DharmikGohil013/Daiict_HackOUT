@@ -9,6 +9,10 @@ services:
     healthCheckPath: /health
 
     envVars:
+      # ── Python Version ────────────────────────────────────────
+      - key: PYTHON_VERSION
+        value: 3.11.9
+
       # ── Flask ─────────────────────────────────────────────────
       - key: FLASK_ENV
         value: production
