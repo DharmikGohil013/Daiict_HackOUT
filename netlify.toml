@@ -1,0 +1,33 @@
+[build]
+  base = "greenshield"
+  command = "npm ci && npm run build"
+  publish = "greenshield/dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# SPA fallback — every path serves index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# API proxy to Render backend (replace the URL after deploying)
+# Uncomment this block once you have your Render URL:
+# [[redirects]]
+#   from = "/api/*"
+#   to = "https://YOUR-RENDER-APP.onrender.com/api/:splat"
+#   status = 200
+#   force = true
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

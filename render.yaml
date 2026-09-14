@@ -1,0 +1,88 @@
+services:
+  - type: web
+    name: ecoledger-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120 "app:create_app()"
+    plan: free          # change to "starter" for always-on
+    healthCheckPath: /health
+
+    envVars:
+      # ── Flask ─────────────────────────────────────────────────
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_DEBUG
+        value: false
+      - key: FLASK_PORT
+        value: 10000      # Render sets $PORT automatically; this is just a fallback
+
+      # ── Secrets (set these in the Render dashboard, NOT here) ──
+      - key: FLASK_SECRET_KEY
+        generateValue: true   # Render auto-generates a secure random value
+      - key: JWT_SECRET_KEY
+        generateValue: true
+
+      # ── JWT TTL ────────────────────────────────────────────────
+      - key: JWT_ACCESS_TOKEN_EXPIRES
+        value: 28800      # 8 hours
+
+      # ── Database ───────────────────────────────────────────────
+      # SQLite path inside the Render disk (see disk section below)
+      - key: DATABASE_URL
+        value: sqlite:////opt/render/project/src/storage/ledger.db
+
+      # ── Storage paths ──────────────────────────────────────────
+      - key: CERT_STORAGE_PATH
+        value: /opt/render/project/src/storage/certificates/
+      - key: TEMP_STORAGE_PATH
+        value: /opt/render/project/src/storage/temp/
+      - key: UPLOADS_PATH
+        value: /opt/render/project/src/storage/uploads/
+
+      # ── RSA keys (stored inside the project) ──────────────────
+      - key: RSA_PRIVATE_KEY_PATH
+        value: keys/private.pem
+      - key: RSA_PUBLIC_KEY_PATH
+        value: keys/public.pem
+
+      # ── ML models ─────────────────────────────────────────────
+      - key: GENERATION_MODEL_PATH
+        value: models/generation_rf.pkl
+      - key: ANOMALY_MODEL_PATH
+        value: models/isolation_forest.pkl
+      - key: HISTORICAL_DATA_PATH
+        value: data/historical_gen.csv
+
+      # ── CORS — add your Vercel frontend URL here ──────────────
+      - key: CORS_ORIGINS
+        value: https://your-app.vercel.app,http://localhost:5174
+
+      # ── Admin seed (set in dashboard, not committed) ──────────
+      - key: ADMIN_EMAIL
+        value: admin@ecoledger.io
+      - key: ADMIN_PASSWORD
+        generateValue: true
+
+      # ── Logging ────────────────────────────────────────────────
+      - key: LOG_LEVEL
+        value: INFO
+      - key: LOG_FORMAT
+        value: json
+
+      # ── Risk engine ────────────────────────────────────────────
+      - key: RISK_THRESHOLDS
+        value: 30,60,80
+      - key: RISK_WEIGHTS
+        value: 40,20,20,10,10
+      - key: AUTO_VERIFY_MAX_LEVEL
+        value: MEDIUM
+      - key: ANOMALY_THRESHOLD
+        value: "-0.1"
+
+    # Persistent disk for SQLite DB + uploaded files
+    # (Free plan: no disk support — upgrade to Starter for persistence)
+    # disk:
+    #   name: ecoledger-data
+    #   mountPath: /opt/render/project/src/storage
+    #   sizeGB: 5

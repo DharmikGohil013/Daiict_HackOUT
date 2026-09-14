@@ -21,6 +21,19 @@ http.interceptors.request.use((config) => {
 http.interceptors.response.use(
   (res) => res,
   (err) => {
+    // If the server says "Unauthorized", clear the stale session and boot to login
+    if (err.response?.status === 401) {
+      // Avoid circular import by accessing zustand store directly
+      try {
+        const { logout } = (window as any).__greenshieldAuth ?? {};
+        if (logout) logout();
+      } catch { /* ignore */ }
+      writeToken(null);
+      // Hard redirect — clears all in-memory query cache too
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login';
+      }
+    }
     const data = err.response?.data as { error?: string; message?: string; details?: string[] } | undefined;
     const e: ApiError = new Error(data?.error || data?.message || err.message || 'Request failed');
     e.status = err.response?.status;

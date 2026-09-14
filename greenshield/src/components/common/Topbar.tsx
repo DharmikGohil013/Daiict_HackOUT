@@ -24,7 +24,7 @@ export function Topbar({ onMenu, portal }: { onMenu: () => void; portal: string 
   return (
     <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-line bg-surface/90 px-4 py-2.5 backdrop-blur md:px-8">
       <button type="button" className="btn btn-ghost btn-sm lg:hidden" onClick={onMenu} aria-label="Open menu"><Menu size={18} /></button>
-      <div className="text-sm font-semibold text-ink-2">{titleCase(portal)} portal</div>
+      <div className="text-sm font-semibold text-ink-2 hidden sm:block">EcoLedger · <span className="text-ink-3 font-normal">{titleCase(portal)}</span></div>
       <SampleDataBadge />
       <div className="ml-auto flex items-center gap-2">
         <button type="button" className="btn btn-ghost btn-sm" onClick={toggle} aria-label="Toggle theme">{theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}</button>

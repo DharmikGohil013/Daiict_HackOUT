@@ -9,10 +9,13 @@ htmlcov/
 venv/
 .venv/
 
-# Environment
+# Environment — keep .env.example and .env.production in git
 .env
 backend/.env
 frontend/.env
+greenshield/.env
+# .env.production IS committed (only public var names — secrets set in Vercel dashboard)
+# .env.example IS committed
 
 # Secrets
 backend/keys/private.pem
@@ -32,6 +35,8 @@ backend/models/*.pkl
 node_modules/
 frontend/dist/
 frontend/.vite/
+greenshield/dist/
+greenshield/.vite/
 
 # OS / editor
 .DS_Store

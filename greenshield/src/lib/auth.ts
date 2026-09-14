@@ -26,9 +26,22 @@ export const useAuth = create<AuthState>()(
         set({ token: null, user: null });
       },
     }),
-    { name: 'greenshield.session', onRehydrateStorage: () => (state) => { if (state?.token) writeToken(state.token); } },
+    {
+      name: 'greenshield.session',
+      onRehydrateStorage: () => (state) => {
+        if (state?.token) writeToken(state.token);
+        // Expose logout so the Axios 401 interceptor can call it without circular deps
+        if (state?.logout) (window as any).__greenshieldAuth = { logout: state.logout };
+      },
+    },
   ),
 );
+
+// Also expose immediately in case zustand rehydrated synchronously
+setTimeout(() => {
+  const { logout } = useAuth.getState();
+  (window as any).__greenshieldAuth = { logout };
+}, 0);
 
 export const selectRole = (s: AuthState): Role | null => s.user?.role ?? null;
 export const isGovernmentRole = (role: Role | null | undefined) => !!role && GOV_ROLES.includes(role);

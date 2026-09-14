@@ -13,102 +13,145 @@ import { Link, useNavigate } from 'react-router-dom';
 function GenerationCalendar({ data }: { data: any[] }) {
   const navigate = useNavigate();
   const today = new Date();
-  const year = today.getFullYear();
-  const month = today.getMonth();
-  
+  const [viewMonth, setViewMonth] = useState({ year: today.getFullYear(), month: today.getMonth() });
+  const { year, month } = viewMonth;
+
+  const monthName = new Date(year, month, 1).toLocaleString('default', { month: 'long', year: 'numeric' });
   const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDayOfWeek = new Date(year, month, 1).getDay();
+
   const days = Array.from({ length: daysInMonth }, (_, i) => {
     const d = new Date(year, month, i + 1);
     return d.toISOString().split('T')[0];
   });
-  
+
   const dataByDate = useMemo(() => {
     const map = new Map();
     data.forEach(r => map.set(r.date, r));
     return map;
   }, [data]);
-  
+
   const [selectedDay, setSelectedDay] = useState<any>(null);
-  
+
+  const prevMonth = () => setViewMonth(v => {
+    const d = new Date(v.year, v.month - 1, 1);
+    return { year: d.getFullYear(), month: d.getMonth() };
+  });
+  const nextMonth = () => setViewMonth(v => {
+    const d = new Date(v.year, v.month + 1, 1);
+    return { year: d.getFullYear(), month: d.getMonth() };
+  });
+
   return (
-    <div className="mb-8 p-4 bg-white border border-neutral-200 rounded-lg">
-      <h3 className="text-lg font-medium mb-4">Daily Upload Status (This Month)</h3>
-      <div className="grid grid-cols-7 gap-2">
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
-          <div key={d} className="text-center text-xs font-semibold text-neutral-500">{d}</div>
+    <div className="mb-8 p-5 bg-surface border border-line rounded-xl2 shadow-card">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-base font-display font-semibold text-ink">Daily Upload Status</h3>
+        <div className="flex items-center gap-2">
+          <button onClick={prevMonth} className="btn btn-ghost btn-sm px-2">‹</button>
+          <span className="text-sm font-medium text-ink min-w-[140px] text-center">{monthName}</span>
+          <button onClick={nextMonth} className="btn btn-ghost btn-sm px-2">›</button>
+        </div>
+      </div>
+      {/* Legend */}
+      <div className="flex gap-4 mb-3">
+        <span className="flex items-center gap-1.5 text-xs text-ink-3"><span className="w-3 h-3 rounded-sm bg-low-soft border border-low/30 inline-block" />Uploaded</span>
+        <span className="flex items-center gap-1.5 text-xs text-ink-3"><span className="w-3 h-3 rounded-sm bg-critical-soft border border-critical/30 inline-block" />Missing</span>
+        <span className="flex items-center gap-1.5 text-xs text-ink-3"><span className="w-3 h-3 rounded-sm bg-medium-soft border border-medium/30 inline-block" />Pending</span>
+      </div>
+      {/* Day headers */}
+      <div className="grid grid-cols-7 gap-1.5 mb-1">
+        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => (
+          <div key={d} className="text-center text-[11px] font-semibold text-ink-3 pb-1">{d}</div>
         ))}
-        {Array.from({ length: new Date(year, month, 1).getDay() }).map((_, i) => (
+      </div>
+      {/* Calendar grid */}
+      <div className="grid grid-cols-7 gap-1.5">
+        {Array.from({ length: firstDayOfWeek }).map((_, i) => (
           <div key={`empty-${i}`} />
         ))}
         {days.map(day => {
           const hasData = dataByDate.has(day);
           const r = dataByDate.get(day);
           const status = r?.status || 'approved';
-          const colorClass = hasData 
-             ? (status === 'declined' ? 'bg-red-200 text-red-900 border-red-300' : 
-                status === 'pending' ? 'bg-yellow-100 text-yellow-900 border-yellow-300 hover:bg-yellow-200' :
-                'bg-green-100 hover:bg-green-200 text-green-900 border-green-300') 
-             : 'bg-red-50 hover:bg-red-100 text-red-700 border-red-200';
-             
+          const dayNum = new Date(day + 'T12:00:00').getDate();
+          const isToday = day === today.toISOString().split('T')[0];
+
+          let cellClass = '';
+          let labelText = 'Missing';
+          if (hasData) {
+            if (status === 'declined') {
+              cellClass = 'bg-critical-soft text-critical border-critical/30 hover:opacity-80';
+              labelText = 'Declined';
+            } else if (status === 'pending') {
+              cellClass = 'bg-medium-soft text-medium border-medium/30 hover:opacity-80';
+              labelText = 'Pending';
+            } else {
+              cellClass = 'bg-low-soft text-low border-low/30 hover:opacity-80';
+              labelText = 'OK';
+            }
+          } else {
+            cellClass = 'bg-critical-soft/50 text-critical border-critical/20 hover:bg-critical-soft';
+          }
+
           return (
-            <button 
+            <button
               key={day}
-              className={`p-2 border rounded-md text-center transition-colors ${colorClass}`}
+              className={`p-1.5 border rounded-lg text-center transition-all duration-150 ${cellClass} ${isToday ? 'ring-2 ring-primary ring-offset-1' : ''}`}
               onClick={() => {
-                if (hasData) {
-                  setSelectedDay(r);
-                } else {
-                  navigate(`${ROUTES.generator.submit}?date=${day}`);
-                }
+                if (hasData) setSelectedDay(r);
+                else navigate(`${ROUTES.generator.submit}?date=${day}`);
               }}
             >
-              <div className="text-sm font-medium">{new Date(day).getDate()}</div>
-              <div className="text-[10px] mt-1 font-semibold uppercase">{hasData ? status : 'Missing'}</div>
+              <div className="text-sm font-semibold leading-none">{dayNum}</div>
+              <div className="text-[9px] mt-1 font-bold uppercase tracking-wide opacity-80">{labelText}</div>
             </button>
-          )
+          );
         })}
       </div>
-      
+
+      {/* Day detail modal */}
       {selectedDay && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold mb-4">Data Status: {selectedDay.date}</h3>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center py-2 border-b">
-                <span className="text-neutral-500">Status</span>
-                <span className={`font-bold uppercase text-xs px-2 py-1 rounded ${
-                  selectedDay.status === 'declined' ? 'bg-red-100 text-red-800' :
-                  selectedDay.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                  'bg-green-100 text-green-800'
+        <div className="fixed inset-0 bg-ink/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm" onClick={() => setSelectedDay(null)}>
+          <div className="bg-surface rounded-xl2 shadow-xl p-6 max-w-md w-full border border-line" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-display font-semibold text-ink">Data Status: {selectedDay.date}</h3>
+              <button className="btn btn-ghost btn-sm px-2 text-ink-3" onClick={() => setSelectedDay(null)}>✕</button>
+            </div>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center py-2 border-b border-line">
+                <span className="text-ink-3 text-sm">Status</span>
+                <span className={`chip font-bold uppercase text-[10px] ${
+                  selectedDay.status === 'declined' ? 'bg-critical-soft text-critical' :
+                  selectedDay.status === 'pending' ? 'bg-medium-soft text-medium' :
+                  'bg-low-soft text-low'
                 }`}>{selectedDay.status || 'APPROVED'}</span>
               </div>
-              <div className="flex justify-between py-1">
-                <span className="text-neutral-500">Generation</span>
-                <span className="font-medium">{fmtEnergy(selectedDay.generation_kwh)}</span>
+              <div className="flex justify-between py-1.5">
+                <span className="text-ink-3 text-sm">Generation</span>
+                <span className="font-medium text-ink text-sm">{fmtEnergy(selectedDay.generation_kwh)}</span>
               </div>
-              <div className="flex justify-between py-1">
-                <span className="text-neutral-500">AI Predicted</span>
-                <span className="font-medium">{selectedDay.predicted_kwh != null ? fmtEnergy(selectedDay.predicted_kwh) : 'N/A'}</span>
+              <div className="flex justify-between py-1.5">
+                <span className="text-ink-3 text-sm">AI Predicted</span>
+                <span className="font-medium text-ink text-sm">{selectedDay.predicted_kwh != null ? fmtEnergy(selectedDay.predicted_kwh) : '—'}</span>
               </div>
-              <div className="flex justify-between py-1">
-                <span className="text-neutral-500">Meter Reading</span>
-                <span className="font-medium">{selectedDay.meter_reading_kwh != null ? `${fmtNumber(selectedDay.meter_reading_kwh)} kWh` : 'N/A'}</span>
+              <div className="flex justify-between py-1.5">
+                <span className="text-ink-3 text-sm">Meter Reading</span>
+                <span className="font-medium text-ink text-sm">{selectedDay.meter_reading_kwh != null ? `${fmtNumber(selectedDay.meter_reading_kwh)} kWh` : '—'}</span>
               </div>
-              
+
               {selectedDay.status === 'approved' && (
-                <div className="mt-4 p-3 bg-green-50 rounded border border-green-100">
-                  <p className="text-sm text-green-800 mb-2">REC Certificate Issued</p>
-                  <div className="flex gap-4">
-                    <Link to={ROUTES.generator.dashboard} className="text-xs font-semibold text-green-600 hover:underline">View in Dashboard &rarr;</Link>
+                <div className="mt-4 p-3 bg-low-soft rounded-lg border border-low/30">
+                  <p className="text-sm text-low font-medium mb-2">✓ REC Certificate Issued</p>
+                  <div className="flex gap-3">
                     {selectedDay.file_name && (
-                      <a href={`${API_BASE}/api/certificate/${selectedDay.file_name}`} download className="text-xs font-semibold text-blue-600 hover:underline">Download REC &darr;</a>
+                      <a href={`${API_BASE}/api/certificate/${selectedDay.file_name}`} download className="btn btn-sm btn-primary text-xs">
+                        Download REC ↓
+                      </a>
                     )}
                   </div>
                 </div>
               )}
-            </div>
-            <div className="mt-6 flex justify-end">
-              <button className="btn btn-secondary" onClick={() => setSelectedDay(null)}>Close</button>
             </div>
           </div>
         </div>

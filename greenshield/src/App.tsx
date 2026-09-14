@@ -45,7 +45,16 @@ const InstProfile = lazy(() => import('@/app/institution/ProfilePage'));
 const IssuerCreateRec = lazy(() => import('@/app/issuer/CreateRecPage'));
 const VerifierPage = lazy(() => import('@/app/verifier/VerifierPage'));
 
-export const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 15_000, refetchOnWindowFocus: false } } });
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 30_000,          // data considered fresh for 30 s
+      refetchOnWindowFocus: true,  // refetch when tab regains focus
+      refetchInterval: 60_000,     // background poll every 60 s
+    },
+  },
+});
 
 /** Route table without providers/router so tests can mount it inside a MemoryRouter. */
 export function AppRoutes() {
